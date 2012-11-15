@@ -154,10 +154,10 @@ public class ControlDemoApplication extends Application {
 		tab = tabStrip.addTab("Balloon");
 		new BalloonDemo(tab);
 	
-		/* -- feature not comepleted
+		
 		tab = tabStrip.addTab("Time Picker");
 		new TimePickerDemo(tab);
-		*/
+		
 		
 		
 		tab = tabStrip.addTab("Date Picker");

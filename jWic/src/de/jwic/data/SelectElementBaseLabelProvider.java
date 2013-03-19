@@ -30,8 +30,8 @@ public class SelectElementBaseLabelProvider implements IBaseLabelProvider<ISelec
 	/* (non-Javadoc)
 	 * @see de.jwic.data.IBaseLabelProvider#getBaseLabel(java.lang.Object)
 	 */
-	public Label getBaseLabel(ISelectElement object) {
-		return new Label(object.getTitle(), object.getImage());
+	public DataLabel getBaseLabel(ISelectElement object) {
+		return new DataLabel(object.getTitle(), object.getImage());
 	}
 
 }

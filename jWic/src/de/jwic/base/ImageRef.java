@@ -176,5 +176,11 @@ public class ImageRef implements Serializable {
 		this.text = text;
 	}
 	
-	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "[ImgRef:" + path + "]";
+	}
 }

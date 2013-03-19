@@ -42,7 +42,7 @@ public class ListBoxControl extends ListControl {
 	 */
 	public ListBoxControl(IControlContainer container, String name) {
 		super(container, name);
-		setCssClass(getSessionContext().getBaseStyle() + "_listbox");
+		setCssClass("default_listbox");
 	}
 
 	/**

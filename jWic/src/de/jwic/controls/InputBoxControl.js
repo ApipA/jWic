@@ -17,6 +17,7 @@
 			#if($control.flagAsError)
 				jQuery(inpElm).addClass("x-error");
 			#end
+			inpElm.addClass("ui-widget");
 		}
 
 	}, 

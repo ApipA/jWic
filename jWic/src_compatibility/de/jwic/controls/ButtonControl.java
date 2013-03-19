@@ -45,7 +45,7 @@ public class ButtonControl extends SelectableControl {
 	 * @see de.jwic.base.Control#init()
 	 */
 	private void init() {
-		setCssClass(getSessionContext().getBaseStyle() + "_button");
+		setCssClass("default_button");
 		if (title == null) {
 			title = getName();
 		}

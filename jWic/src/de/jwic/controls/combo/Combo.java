@@ -34,7 +34,7 @@ import de.jwic.base.ImageRef;
 import de.jwic.base.JavaScriptSupport;
 import de.jwic.data.IBaseLabelProvider;
 import de.jwic.data.IContentProvider;
-import de.jwic.data.Label;
+import de.jwic.data.DataLabel;
 import de.jwic.events.ElementSelectedEvent;
 import de.jwic.events.ElementSelectedListener;
 import de.jwic.events.ValueChangedListener;
@@ -234,7 +234,7 @@ public class Combo<A> extends JsonResourceControl {
 					out.object();
 					out.key("key").value(contentProvider.getUniqueKey(obj));
 					if (baseLabelProvider != null) {
-						Label label = baseLabelProvider.getBaseLabel(obj);
+						DataLabel label = baseLabelProvider.getBaseLabel(obj);
 						out.key("title").value(label.text);
 						if (label.image != null) {
 							out.key("image");

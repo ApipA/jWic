@@ -32,7 +32,7 @@ import de.jwic.base.JavaScriptSupport;
 import de.jwic.base.Range;
 import de.jwic.data.IBaseLabelProvider;
 import de.jwic.data.IContentProvider;
-import de.jwic.data.Label;
+import de.jwic.data.DataLabel;
 import de.jwic.json.JsonResourceControl;
 
 /**
@@ -86,7 +86,7 @@ public class Tree<A> extends JsonResourceControl {
 			out.object();
 			out.key("key").value(contentProvider.getUniqueKey(obj));
 			if (labelProvider != null) {
-				Label label = labelProvider.getBaseLabel(obj);
+				DataLabel label = labelProvider.getBaseLabel(obj);
 				out.key("title").value(label.text);
 				if (label.image != null) {
 					out.key("image");

@@ -315,9 +315,11 @@ public class JWicTools {
 	public String generateCssProperty(IHTMLElement element, String extraStyles, String customClass) {
 		
 		StringBuffer sb = new StringBuffer();
+		sb.append("class=\"ui-widget");
 		if (element.getCssClass() != null && element.getCssClass().length() != 0) {
-			sb.append("class=\"").append(customClass).append("\" ");
+			sb.append(" ").append(customClass);
 		}
+		sb.append("\" ");
 		
 		if (element.getWidth() != 0 || element.getHeight() != 0 || element.isFillWidth() || extraStyles.length() != 0) {
 			

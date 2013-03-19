@@ -47,7 +47,7 @@ public class TabStripControl extends ControlContainer {
 	 */
 	public TabStripControl(IControlContainer container, String name) {
 		super(container, name);
-		cssClass = getSessionContext().getBaseStyle() + "_tabstrip";
+		cssClass = "default_tabstrip";
 	}
 
 	/* (non-Javadoc)

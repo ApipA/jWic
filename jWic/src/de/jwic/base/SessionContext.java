@@ -77,7 +77,7 @@ public class SessionContext implements IControlContainer, Serializable {
 	private String clientId = null;
 	private String sessionId = null;
 	
-	private String baseStyle = "default";
+	private String themeName = "default";
 	
 	private Map<String, String[]> initParameter = null;
 	private List<SessionListener> listeners = null;
@@ -765,23 +765,6 @@ public class SessionContext implements IControlContainer, Serializable {
 	}
 
 	/**
-	 * @return the baseStyle
-	 */
-	public String getBaseStyle() {
-		return baseStyle;
-	}
-
-	/**
-	 * The base style defines the style based for the controls. Each (standard) control
-	 * is using this base style as part of its CSS class.
-	 * 
-	 * @param baseStyle the baseStyle to set
-	 */
-	public void setBaseStyle(String baseStyle) {
-		this.baseStyle = baseStyle;
-	}
-
-	/**
 	 * Returns the list of queued script commands. These are executed with the next regular
 	 * page update.
 	 * @return the scriptQueue
@@ -827,6 +810,23 @@ public class SessionContext implements IControlContainer, Serializable {
 	 */
 	public void notifyMessage(String message, String cssClazz, double duration, double delay) {
 		queueScriptCall("JWic.ui.Notify.display('" + StringEscapeUtils.escapeJavaScript(message) + "', '" + cssClazz + "', " + duration + ", " + delay + ");");
+	}
+
+	/**
+	 * @return the themeName
+	 */
+	public String getThemeName() {
+		return themeName;
+	}
+
+	/**
+	 * The theme name used by the application. This is typically used to load different
+	 * css files form the themes folder to customize the application.
+	 * @param themeName the themeName to set
+	 */
+	public void setThemeName(String themeName) {
+		this.themeName = themeName;
+		setRequireRedraw(true);
 	}
 
 }

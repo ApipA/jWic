@@ -33,6 +33,6 @@ public interface IBaseLabelProvider<A> extends Serializable {
 	 * @param object
 	 * @return
 	 */
-	public Label getBaseLabel(A object);
+	public DataLabel getBaseLabel(A object);
 	
 }

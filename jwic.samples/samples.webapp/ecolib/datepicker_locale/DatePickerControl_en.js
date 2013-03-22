@@ -1,4 +1,7 @@
 (function(jQuery){
+	jQuery.datepicker = jQuery.datepicker || {};
+	jQuery.datepicker.regional = 	jQuery.datepicker.regional || {}; 
+	
 	jQuery.datepicker.regional['en'] = {
         closeText: 'Done',
         prevText: 'Prev',

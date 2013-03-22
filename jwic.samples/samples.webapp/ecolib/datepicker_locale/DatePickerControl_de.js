@@ -1,4 +1,6 @@
 (function(jQuery){
+	jQuery.datepicker = jQuery.datepicker || {};
+	jQuery.datepicker.regional = 	jQuery.datepicker.regional || {}; 
 	jQuery.datepicker.regional['de'] = {
 		monthNames: ['Januar','Februar','März','April','Mai','Juni',
 		     		'Juli','August','September','Oktober','November','Dezember'],

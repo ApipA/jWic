@@ -85,6 +85,23 @@ body {
 	
 }
 
+.demo_debug_actions {
+	margin: 20px 0px;
+}
+.demo_debug_actions ul {
+	padding: 0;
+	margin: 0;
+}
+.demo_debug_actions li {
+	
+	list-style: none;
+	padding: 5px 5px;
+	margin: 0;
+	
+}
+
+
+
 h1.demoTitle {
 	margin-bottom: 0px;
 	padding-bottom: 0px;

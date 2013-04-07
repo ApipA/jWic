@@ -46,5 +46,28 @@ public class DemoSelector extends Control {
 		
 	}
 	
+	/**
+	 * Returns the index of the active group.
+	 * @return
+	 */
+	public int getActiveGroupIndex() {
+		
+		DemoModule active = model.getActiveModule();
+		if (active != null) {
+			String oldGroup = null;
+			int grpIdx = -1;
+			for (DemoModule module : model.getModules()) {
+				if (oldGroup == null || !oldGroup.equals(module.getGroup())) {
+					grpIdx++;
+					oldGroup = module.getGroup();
+				}
+				if (active == module) {
+					break;
+				}
+			}
+			return grpIdx;
+		}
+		return 0;
+	}
 	
 }

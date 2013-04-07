@@ -51,8 +51,36 @@
 						JWic.log("click - " + ctrlId);
 						JWic.fireAction(ctrlId, 'click', '');
 					},
+				},
+			
+				/**
+				 * de.jwic.controls.basics.TabStrip control functions. 
+				 */
+				TabStrip : {
+						initialize : function(tabStrip, ctrlId, activeIndex) {
+							JWic.log(activeIndex);
+							tabStrip.tabs({
+								activate : JWic.controls.basics.TabStrip.activateHandler,
+								active : activeIndex
+							});
+						},
+						
+						activateHandler : function (event, ui) {
+							if (ui.newPanel) {
+								var tabStripId = ui.newPanel.attr("jwicTabStripId");
+								var tabName = ui.newPanel.attr("jwicTabName");
+								JWic.fireAction(tabStripId, "activateTab", tabName);
+							}
+						},
+						activate : function(controlId, panelIdx) {
+							var tabStrip = $("#" + JQryEscape(controlId));
+							tabStrip.tabs("option", "active", panelIdx );
+							tabStrip.tabs("refresh");
+							
+						}
 				}
 			}
+		
 	}
 	);
 })(jQuery);

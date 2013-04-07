@@ -94,6 +94,7 @@ public class ButtonDemo extends ControlContainer {
 	protected void onButtonClick(Object eventSource) {
 		
 		lblInfo.setText("Button Clicked: " + ((Control)eventSource).getName());
+		getSessionContext().notifyMessage(((Button)eventSource).getTitle() + " was clicked.");
 		
 	}
 	

@@ -70,6 +70,11 @@ var JWic = {
 				JWic.pleaseWaitDelayTime);
 
 		var jwicform = jQuery('#jwicform').get(0);
+		if (!jwicform) {
+			// This might occure if the page is refreshed due to a timeout
+			JWic.log("jwicform not found - command skipped");
+			return;
+		}
 		jwicform.elements['__ctrlid'].value = cmd.senderControl;
 		jwicform.elements['__action'].value = cmd.actionName;
 		jwicform.elements['__acpara'].value = cmd.actionParameter;
@@ -280,6 +285,7 @@ var JWicInternal = {
 	 */
 	handleResponse : function(ajaxResponse) {
 		var jwicform = jQuery('#jwicform').get(0);
+		
 
 		if (ajaxResponse.status == 0 && ajaxResponse.responseText == "") {
 			alert("The server did not respond to the request. Please check your network connectivity and try again.");
@@ -314,89 +320,14 @@ var JWicInternal = {
 			if (response.updateables) {
 				
 				jQuery.each(response.updateables, function(idx, elm) {
-					var control = jQuery("#ctrl_" + JQryEscape(elm.key)).get(0);
-					
-					var scripts = [];
-					if (elm.scripts) {
-						for ( var i = 0; i < elm.scripts.length; i++) {
-							
-							scripts.push({
-								key: elm.scripts[i].controlId, 
-								script: eval('(' + elm.scripts[i].script + ')')
-							});
-						}
-					}
-
-					if (control) {
-						// call beforeUpdate in scripts
-						for ( var i = 0; i < scripts.length; i++) {
-							if (scripts[i].script.beforeUpdate) {
-								scripts[i].script.beforeUpdate(control);
-							}
-						}
-						var doReplace = true;
-						for ( var i = 0; i < scripts.length; i++) {
-							if (scripts[i].script.doUpdate) {
-								if (scripts[i].script.doUpdate(control)) {
-									doReplace = false;
-									break;
-								}
-							}
-						}
-						if (doReplace) { // replace the DOM element with the
-											// rendered snippit received
-
-							// call destroy handler and remove them
-							var deLst = JWicInternal.destroyList;
-							for ( var i = deLst.length - 1; i >= 0; i--) {
-								if (deLst[i] && (deLst[i].key == elm.key || deLst[i].key.indexOf(elm.key + ".") === 0)) {
-									JWic.log("Destroy: " + deLst[i].key + " because of " + elm.key);
-									deLst[i].destroy(control);
-									deLst.splice(i, 1);
-								}
-							}
-							// remove any beforeUpdateCallbacks
-							var allKeys = [];
-							jQuery.each(JWicInternal.beforeRequestCallbacks, function(key, value) {
-							      allKeys.push(key);
-							});
-							
-							jQuery.each(allKeys, function(key, val) {
-								
-								if (val.indexOf(elm.key) === 0) {
-									delete JWicInternal.beforeRequestCallbacks[key];
-								}
-							});
-							
-							// register destroy handler
-							for ( var i = 0; i < scripts.length; i++) {
-								if (scripts[i].script.destroy) {
-									deLst.push( {
-										key :scripts[i].key,
-										destroy :scripts[i].script.destroy
-									});
-								}
-							}
-
-							jQuery(control).replaceWith(elm.html);
-
-							// call afterUpdate in scripts
-							for ( var i = 0; i < scripts.length; i++) {
-								if (scripts[i].script.afterUpdate) {
-									scripts[i].script.afterUpdate(control);
-								}
-							}
-						}
-					} else {
-						// alert("A control with the ID '" + elm.key + "' does
-						// not exist on the page and can not be updated.");
-					}
+					JWicInternal.updateControl(elm);
 				});
 			}
 			
 			if (response.scriptQueue) {
-				response.scriptQueue.each(function(line) {
+				jQuery.each(response.scriptQueue, function(idx, line) {
 					try {
+						JWic.log("executing: " + line);
 						eval(line);
 					} catch (e) {
 						JWic.log("Error executing script queue: " + e + " for line " + line);
@@ -407,6 +338,89 @@ var JWicInternal = {
 		}
 	},
 
+	/**
+	 * Update a control on the document.
+	 */
+	updateControl : function(elm, control) {
+		control = control ? control : jQuery("#ctrl_" + JQryEscape(elm.key)).get(0);
+		
+		var scripts = [];
+		if (elm.scripts) {
+			for ( var i = 0; i < elm.scripts.length; i++) {
+				
+				scripts.push({
+					key: elm.scripts[i].controlId, 
+					script: eval('(' + elm.scripts[i].script + ')')
+				});
+			}
+		}
+
+		if (control) {
+			// call beforeUpdate in scripts
+			for ( var i = 0; i < scripts.length; i++) {
+				if (scripts[i].script.beforeUpdate) {
+					scripts[i].script.beforeUpdate(control);
+				}
+			}
+			var doReplace = true;
+			for ( var i = 0; i < scripts.length; i++) {
+				if (scripts[i].script.doUpdate) {
+					if (scripts[i].script.doUpdate(control)) {
+						doReplace = false;
+						break;
+					}
+				}
+			}
+			if (doReplace) { // replace the DOM element with the
+								// rendered snippit received
+
+				// call destroy handler and remove them
+				var deLst = JWicInternal.destroyList;
+				for ( var i = deLst.length - 1; i >= 0; i--) {
+					if (deLst[i] && (deLst[i].key == elm.key || deLst[i].key.indexOf(elm.key + ".") === 0)) {
+						JWic.log("Destroy: " + deLst[i].key + " because of " + elm.key);
+						deLst[i].destroy(control);
+						deLst.splice(i, 1);
+					}
+				}
+				// remove any beforeUpdateCallbacks
+				var allKeys = [];
+				jQuery.each(JWicInternal.beforeRequestCallbacks, function(key, value) {
+				      allKeys.push(key);
+				});
+				
+				jQuery.each(allKeys, function(key, val) {
+					
+					if (val.indexOf(elm.key) === 0) {
+						delete JWicInternal.beforeRequestCallbacks[key];
+					}
+				});
+				
+				// register destroy handler
+				for ( var i = 0; i < scripts.length; i++) {
+					if (scripts[i].script.destroy) {
+						deLst.push( {
+							key :scripts[i].key,
+							destroy :scripts[i].script.destroy
+						});
+					}
+				}
+
+				jQuery(control).replaceWith(elm.html);
+
+				// call afterUpdate in scripts
+				for ( var i = 0; i < scripts.length; i++) {
+					if (scripts[i].script.afterUpdate) {
+						scripts[i].script.afterUpdate(control);
+					}
+				}
+			}
+		} else {
+			// alert("A control with the ID '" + elm.key + "' does
+			// not exist on the page and can not be updated.");
+		}
+	},
+	
 	/**
 	 * Clears all inProcess flags and hides the please wait screen, if it is
 	 * visible.

@@ -15,6 +15,7 @@ import de.jwic.demo.advanced.ComboLifeSearchDemoModule;
 import de.jwic.demo.basics.ButtonDemoModule;
 import de.jwic.demo.basics.InputBoxDemoModule;
 import de.jwic.demo.basics.LabelDemoModule;
+import de.jwic.demo.basics.TabStripDemoModule;
 import de.jwic.demo.framework.AsyncRenderDemoModule;
 import de.jwic.demo.framework.BlockOnWaitDemo;
 
@@ -46,6 +47,7 @@ public class DemoApplication extends Application {
 		modules.add(new ComboDropDownDemoModule());
 		modules.add(new ComboLifeSearchDemoModule());
 		modules.add(new AsyncRenderDemoModule());
+		modules.add(new TabStripDemoModule());
 		
 		// Sort demos by group and title
 		Collections.sort(modules);

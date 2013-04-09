@@ -444,8 +444,8 @@ var JWicInternal = {
 				elem.style.width = 100 + '%';
 //				elem.style.backgroundImage = 'url(none)';
 //				elem.style.backgroundColor = '#a0a0a0';
-				elem.style.filter = 'alpha(opacity=30)'; // IE compatibility
-				elem.style.opacity = '0.3'; // modern browsers
+				elem.style.filter = 'alpha(opacity=75)'; // IE compatibility
+				elem.style.opacity = '0.75'; // modern browsers
 				if (msg) {
 					msg.style.position = "absolute";
 					if (msg.parentNode.align == "right") {

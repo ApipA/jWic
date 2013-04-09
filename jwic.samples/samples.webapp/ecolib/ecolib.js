@@ -28,7 +28,7 @@ JWic.ecolib.controls = {
 			 * Handle the response from the server and render the status.
 			 */
 			handleResponse : function(controlId, resp) {
-				var data = jQuery.parseJSON(resp.responseText);
+				var data = jQuery.evalJSON(resp.responseText);
 				var container = jQuery("#pi_" + JQryEscape(controlId)).get(0);
 				if (container) { // view container might have been removed in the meantime
 					if (data.monitor) {

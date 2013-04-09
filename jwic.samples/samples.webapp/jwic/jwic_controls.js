@@ -625,12 +625,7 @@ JWic.controls = {
 					resizable: false,
 					height: 200,
 					width: boxWidth - 3,
-					autoOpen:false,
-					position:{
-						my:'top',
-						at:'bottom',
-						of:jQuery(comboBox)
-					}
+					autoOpen:false
 				});
 				comboBoxWin.parent().appendTo(jQuery("#jwicform"));	
 				jQuery(".ui-dialog-titlebar").hide();
@@ -659,7 +654,20 @@ JWic.controls = {
 					alert("DataLoader is not specified/found");
 				}
 			}
-			
+			var stuff = (jQuery(comboBox).offset().top-jQuery(window).scrollTop())
+			if(stuff+200 > jQuery(window).height()){
+				comboBoxWin.dialog('option','position',{
+					my:'bottom',
+					at:'top',
+					of:jQuery(comboBox)
+				});
+			}else{
+				comboBoxWin.dialog('option','position',{
+						my:'top',
+						at:'bottom',
+						of:jQuery(comboBox)
+				});
+			}
 			comboBoxWin.dialog('open');
 		},
 		/**

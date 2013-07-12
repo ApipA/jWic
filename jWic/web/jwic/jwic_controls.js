@@ -1651,7 +1651,7 @@ JWic.controls = {
 			}).blur();
 			
 			if (inpElm.attr("xListenKeyCode") != 0) {
-				inpElm.bind("keyup", InputBoxControl.keyHandler);
+				inpElm.bind("keyup", JWic.control.InputBoxControl.keyHandler);
 			}
 			
 			// override the getValue() method to "fix" the serialization

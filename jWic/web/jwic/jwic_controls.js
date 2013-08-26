@@ -258,27 +258,31 @@ JWic.controls = {
 		/**
 		 * Initialize a new control.
 		 */
-		initialize : function(inpElm, controlId, region, dateFormat, options, currentTime) {
+		initialize : function(inpElm, controlId, region, dateFormat, options, currentTime, fieldId) {
 			/*
 			 * clone the region info
 			 * so you can maintain language date but change date format only on this instance of the datepicker
 			 */
-			var region = jQuery.extend(true, {}, jQuery.datepicker.regional[region]);
+			var region = jQuery.extend(true, {}, jQuery.datepicker.regional[region]),
+			 	field = document.forms.jwicform[fieldId],
+			 	DatePicker = JWic.controls.DatePicker;
+			
+			
 			/*
 			 * set date format in needed
 			 */
-			if(dateFormat != "noformat")
+			if(dateFormat !== "noformat")
 				region.dateFormat = JWic.util.convertToJqueryDateFormat(dateFormat);
 			
 			/*
 			 *	default back to English if selected region is undefined 
 			 */
-			if(region == undefined){
+			if(region === undefined){
 				region = jQuery.extend(true, {}, jQuery.datepicker.regional['en']);
 				/*
 				 * notify java control to default back to Locale.ENGLISH as well
 				 */
-				JWic.fireAction(controlId,'localeNotFound','');
+				JWic.fireAction(controlId,'localeNotFound','');//this is needed to revert to default locale on the server as well. it should not fire normally but just in case
 			}
 			
 			/*
@@ -288,31 +292,18 @@ JWic.controls = {
 			var datepicker = jQuery( "#" + id ).datepicker(options);
 			
 			datepicker.datepicker("option",region);		
-			this.setDate(datepicker, currentTime);
-			
-			
-			function nullDateNotifier(e){			
-				if(this.value == ''){
-					JWic.fireAction(this.id, 'dateisempty', '');
-				}
+//			this.setDate(datepicker, currentTime);
+
+			if(field.value){
+				this.setDate(datepicker, field.value, field);
 			}
-			
-			/*
-			 *  AJAX stuff :D
-			 */
 			datepicker.change(function(){
-				
-				var date = datepicker.datepicker('getDate');
-				if(date!=null){
-					var date_utc = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+				field.value = DatePicker.getUTCDate(datepicker).getTime();
+				if(options.updateOnChange){
+					var date_utc = DatePicker.getUTCDate(datepicker);
 					JWic.fireAction(this.id, 'datechanged', '' + date_utc.getTime());
-				}else{
-					nullDateNotifier();
 				}
-				
 			});
-			
-			datepicker.keyup(nullDateNotifier);
 			
 			return datepicker;
 		},
@@ -320,8 +311,9 @@ JWic.controls = {
 		/*
 		 * set datepicker date from java
 		 */
-		setDate : function(datepicker, currentTime){
+		setDate : function(datepicker, currentTime, field){
 			datepicker.datepicker('setDate', JWic.controls.DateTimePicker.convertDate(currentTime));
+			field.value = this.getUTCDate(datepicker).getTime();
 		},
 		
 		/**
@@ -329,6 +321,15 @@ JWic.controls = {
 		 */
 		destroy : function(inpElm) {
 			
+		},
+		
+		getUTCDate: function (datepicker) {
+			var date = datepicker.datepicker('getDate');
+			return date !== null ? new Date(date.getTime() - date.getTimezoneOffset() * 60000) : {
+				getTime : function () {
+					return ''; //a mock object with the get time function since getTime is passes to the server
+				}
+			};
 		}
 	},
 	
@@ -340,12 +341,15 @@ JWic.controls = {
 		/**
 		 * Initialize a new control.
 		 */
-		initialize : function(inpElm, controlId, region, dateFormat, timeFormat, options, currentTime) {
+		initialize : function(inpElm, controlId, region, dateFormat, timeFormat, options, currentTime, fieldId) {
 			/*
 			 * clone the region info
 			 * so you can maintain language date but change date format only on this instance of the datepicker
 			 */
-			var region = jQuery.extend(true, {}, jQuery.datepicker.regional[region]);
+			var region = jQuery.extend(true, {}, jQuery.datepicker.regional[region]),
+				DatePicker= JWic.controls.DatePicker,
+				field = document.forms.jwicform[fieldId];
+			 	
 			/*
 			 * set date format in needed
 			 */
@@ -374,32 +378,16 @@ JWic.controls = {
 			var datetimepicker = jQuery( "#" + id ).datetimepicker(options);
 			
 			datetimepicker.datetimepicker("option",region);		
-			this.setDate(datetimepicker, currentTime);
-			
-			
-			function nullDateNotifier(e){			
-				if(this.value == ''){
-					JWic.fireAction(this.id, 'dateisempty', '');
-				}
+			if(field.value){
+				this.setDate(datetimepicker, field.value, field);
 			}
-			
-			/*
-			 *  AJAX stuff :D
-			 */
 			datetimepicker.change(function(){
-				
-				var date = datetimepicker.datetimepicker('getDate');
-				if(date!=null){
-					var date_utc = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-					//var date_utc = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(),  date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds());
+				field.value = DatePicker.getUTCDate(datetimepicker).getTime();
+				if(options.updateOnChange){
+					var date_utc = DatePicker.getUTCDate(datepicker);
 					JWic.fireAction(this.id, 'datechanged', '' + date_utc.getTime());
-				}else{
-					nullDateNotifier();
 				}
-				
 			});
-			
-			datetimepicker.keyup(nullDateNotifier);
 			
 			return datetimepicker;
 		},
@@ -475,7 +463,7 @@ JWic.controls = {
 
 			self = jQuery(self);
 			var settings = {
-				width : 250
+				width : 'auto'
 	        };
 	                    
 			if(options) {
@@ -494,22 +482,26 @@ JWic.controls = {
 			self.wrap(wrapper);
 			
 			self.css({
-			            "position": "relative",
-			            "height": "25px",
-			            "width": "120px",
-			            "display": "inline",
-			            "cursor": "pointer",
-			            "opacity": "0.0"
-			        });
-			
+	            "position": "absolute",
+	            "top": "0px",
+	            "right": "0px",
+	            "height": "25px",
+	            "display": "inline",
+	            "cursor": "pointer",
+	            "opacity": "0.0",
+			    "font-size": "1.9em"
+	        });
+	
 			if (jQuery.browser.mozilla) {
 			    if (/Win/.test(navigator.platform)) {
-			    	self.css("margin-left", "-142px");                    
+			    	//
 			    } else {
-			    	self.css("margin-left", "-168px");                    
+			    	//
 			    };
+			} else if (jQuery.browser.msie){
+				//
 			} else {
-				self.css("margin-left", "0px");                
+				//
 			};
 			
 			self.bind("change", function() {
@@ -526,11 +518,12 @@ JWic.controls = {
 
 		initialize : function(controlId, options) {
 			var win = JWic.$("win_" + controlId);
+			var Window = JWic.controls.Window;//helps with minification and access speed
 			if (win) {
 				var dlgOptions = {
-					close : function() {JWic.controls.Window.close(controlId);},
-					dragStop: function( event, ui ) {JWic.controls.Window.dragStop(controlId, ui)},
-					resizeStop: function( event, ui ) {JWic.controls.Window.resizeStop(controlId, ui)}
+					close : function() {Window.close(controlId);},
+					dragStop: function( event, ui ) {Window.dragStop(controlId, ui)},
+					resizeStop: function( event, ui ) {Window.resizeStop(controlId, ui)}
 				};
 				jQuery.extend(dlgOptions, options);
 				
@@ -543,7 +536,7 @@ JWic.controls = {
 					this.addMaximizeToDialog(win);
 					var titlebar = win.parents('.ui-dialog').find('.ui-dialog-titlebar');
 					titlebar.dblclick(function(event){
-						JWic.controls.Window.maximize(win);
+						Window.maximize(win);
 					});			
 				}
 				if(options.minimizable) {
@@ -1123,16 +1116,11 @@ JWic.controls = {
 					dialogClass : "j-combo-content",
 					resizable: false,
 					height: 200,
-					width: boxWidth - 3,
-					autoOpen:false,
-					position:{
-						my:'top',
-						at:'bottom',
-						of:jQuery(comboBox)
-					}
+					width: boxWidth - 2,
+					autoOpen:false
 				});
 				comboBoxWin.parent().appendTo(jQuery("#jwicform"));	
-				jQuery(".ui-dialog-titlebar").hide();
+				comboBoxWin.parent().find(".ui-dialog-titlebar").hide();
 			}			
 				/*
 				 * Haven't included resize and move event, when switching to
@@ -1160,6 +1148,12 @@ JWic.controls = {
 			}
 			
 			comboBoxWin.dialog('open');
+			comboBoxWin.dialog('option','position',{
+				my:'left top',
+				at:'left bottom',
+				of:jQuery(comboBox)
+			});
+			
 		},
 		/**
 		 * Invoked when the box is resized.
@@ -1437,13 +1431,13 @@ JWic.controls = {
 						}
 						var action = "JWic.controls.Combo.ComboElementListRenderer.handleSelection('" + controlId + "', '" + obj.key + "');";
 						
-						code += '<div comboElement="' + idx + '" onClick="' + action + 'return false;" class="j-combo_element ' + extraClasses + '">';
+						code += '<div comboElement="' + idx + '" onClick="' + action + '" class="j-combo_element ' + extraClasses + '">';
 						if (comboBox.multiSelect) {
 							code += "<input ";
 							if (JWic.controls.Combo.isSelected(comboBox, obj.key)) {
 								code += "checked";
 							}
-							code += " id='cbc_" + controlId + "." + idx + "' type=\"checkbox\" class=\"j-combo-chkbox\" onClick=\"" + action + "\"/>";
+							code += " id='cbc_" + controlId + "." + idx + "' type=\"checkbox\" class=\"j-combo-chkbox\"/>";
 						}
 						code += content;
 						code += '</div>';
@@ -1455,9 +1449,10 @@ JWic.controls = {
 																// found at all
 						JWic.controls.Combo.searchSuggestion(comboBox, null);
 					}
-					jQuery(comboBoxWin).html(code);
-					jQuery(comboBoxWin).bind("mouseover", JWic.controls.Combo.ComboElementListRenderer.mouseOverHandler);
-					jQuery(comboBoxWin).bind("mouseout", JWic.controls.Combo.ComboElementListRenderer.mouseOutHandler);
+					jQuery(comboBoxWin).html(code)
+						.bind("mouseover", JWic.controls.Combo.ComboElementListRenderer.mouseOverHandler)
+						.bind("mouseout", JWic.controls.Combo.ComboElementListRenderer.mouseOutHandler);
+									
 				}
 			},
 			
@@ -1517,7 +1512,7 @@ JWic.controls = {
 						var cbc = document.getElementById("cbc_" + controlId + "." + index);
 						
 						if (comboBox.multiSelect && cbc) {
-							jQuery(cbc).attr('checked',!isSelected);
+							jQuery(cbc).prop('checked', !isSelected);
 						}
 						break;
 					}
@@ -1578,30 +1573,56 @@ JWic.controls = {
 	 * de.jwic.controls.Button control
 	 */
 	Button : {
-		initialize : function(btnElement, ctrlId, options) {
-			JWic.log("Initializing new button " + btnElement);
+		initialize : function(btn, ctrlId, options) {
+			JWic.log("Initializing new button " + btn);
+			
 			var btOpt = {};
 			var opt = options || {};
-			if (opt.menu) {
+			if (opt.menuId) {
 				btOpt = {
 					icons: {
 						secondary: "ui-icon-triangle-1-s"
 					}
 				}
-				btnElement.data("menuId", opt.menu);
+				btn.data("menuId", opt.menuId);
 			}
-			btnElement
-				.button(btOpt)
+			btn.button(btOpt)
 				.click(JWic.controls.Button.clickHandler)
 				.removeClass('ui-button-text-icon-secondary')
 				.find('.ui-button-text').removeClass('ui-button-text').addClass('j-button-text');
 				
-			if(btnElement.hasClass('ui-button-text-only')){
-				btnElement.removeClass('ui-button-text-only').addClass('j-button-text-only');
+			if(btn.hasClass('ui-button-text-only')){
+				btn.removeClass('ui-button-text-only').addClass('j-button-text-only');
 			}
-			btnElement.find('.ui-icon-triangle-1-s').addClass('j-icon');
-			btnElement.data("controlId", ctrlId);
+			btn.find('.ui-icon-triangle-1-s').addClass('j-icon');
+			btn.data("controlId", ctrlId);
 			
+			if(opt.width > 0)
+				btn.width(opt.width);
+
+			if(opt.height > 0)
+				btn.height(opt.height);
+		
+			if(opt.tooltip !== "")
+				btn.tooltip({
+					position: {
+						my: "left top",
+						at: "center bottom"
+						}});
+			
+			if(opt.iconPath !== ""){
+				btn.removeClass('j-button-text-only').removeClass('j-button-text-icon-secondary').removeClass('ui-button-text-only');
+				if(btn.text()===''){
+					btn.addClass('j-button-icon-only');
+				}else{
+					btn.addClass('j-button-text-icon');
+				}
+			
+				btn.append('<span class="j-button-icon"><img border="0" src='+opt.iconPath+'></span>');
+			}
+			if(btn.find('.ui-icon.ui-icon-triangle-1-s').length!==0){
+				btn.removeClass('j-button-text-only').removeClass('j-button-icon-only').removeClass('j-button-text-icon').addClass('j-button-text-icons');
+			};
 		},
 
 		clickHandler : function(e) {
@@ -1636,6 +1657,7 @@ JWic.controls = {
 		 * Initialize a new control.
 		 */
 		initialize : function(inpElm) {
+			var InputBoxControl = JWic.controls.InputBoxControl;
 			inpElm.bind("focus", function () {
 				var input = jQuery(this);
 				if (input.val() == input.attr('placeholder')) {
@@ -1651,7 +1673,8 @@ JWic.controls = {
 			}).blur();
 			
 			if (inpElm.attr("xListenKeyCode") != 0) {
-				inpElm.bind("keyup", JWic.control.InputBoxControl.keyHandler);
+				inpElm.bind("keydown", InputBoxControl.defaultSuppress);
+				inpElm.bind("keyup", InputBoxControl.keyHandler);
 			}
 			
 			// override the getValue() method to "fix" the serialization
@@ -1676,6 +1699,15 @@ JWic.controls = {
 			
 			if (e.keyCode === parseInt(elm.attr("xListenKeyCode"), 10)) {
 				JWic.fireAction(elm.attr('id'), 'keyPressed', '' + e.keyCode);
+				return false;
+			}
+			
+		},
+		defaultSuppress : function(e){
+			var elm = jQuery(e.target);
+			if(e.keyCode === parseInt(elm.attr("xListenKeyCode"),10)){
+				e.preventDefault();
+				return false;
 			}
 		}
 		
@@ -1688,7 +1720,6 @@ JWic.controls = {
 			internalActivate : false,
 			
 			initialize : function(tabStrip, ctrlId, activeIndex) {
-				JWic.log(activeIndex);
 				tabStrip.tabs({
 					beforeActivate : JWic.controls.TabStrip.activateHandler,
 					active : activeIndex
@@ -1700,16 +1731,15 @@ JWic.controls = {
 					return;
 				}
 				if (ui.newPanel) {
-					var tabStripId = ui.newPanel.attr("jwicTabStripId");
-					var tabName = ui.newPanel.attr("jwicTabName");
-					var oldTabName = ui.oldPanel.attr("jwicTabName");
-					var oldH = ui.oldPanel.height();
+					var tabStripId = ui.newPanel.attr("jwicTabStripId"),
+						tabName = ui.newPanel.attr("jwicTabName"),
+						oldTabName = ui.oldPanel.attr("jwicTabName"),
+						oldH = ui.oldPanel.height();
 					
 					// find index of new panel
 					var widget = JWic.$(tabStripId).tabs("widget");
 					var newPanelIdx = -1;
 					var tabs = widget.find("div.ui-tabs-panel");
-					JWic.log(tabs);
 					var count = 0;
 					for (var i = 0; i < tabs.length; i++) {
 						if (jQuery(tabs[i]).attr("jwicTabStripId") == tabStripId) {
@@ -1809,7 +1839,8 @@ JWic.controls = {
 	ColumnSelector : {
 		initialize : function(controlId, options) {
 			
-			var sorts = JWic.$('lst_' + controlId);
+			var sorts = JWic.$('lst_' + controlId),
+				ColumnSelector = JWic.controls.ColumnSelector;
 			if (options.hideDescription) {
 				sorts.find(".j-colRow").tooltip({position: { my: "left+15 center", at: "right center" }});
 			}
@@ -1835,10 +1866,10 @@ JWic.controls = {
 			sorts.sortable("enable");
 			
 			var filterField = JWic.$('search_' + controlId);
-			filterField.on("keyup", function(e) {JWic.controls.ColumnSelector.applyFilter(controlId)});
+			filterField.on("keyup", function(e) {ColumnSelector.applyFilter(controlId)});
 			
 			var clearFilter = JWic.$("cse_" + controlId);
-			clearFilter.on("click", function(e) {JWic.controls.ColumnSelector.clearFilter(controlId)});
+			clearFilter.on("click", function(e) {ColumnSelector.clearFilter(controlId)});
 			clearFilter.tooltip();
 			this.applyFilter(controlId); 
 		}, 

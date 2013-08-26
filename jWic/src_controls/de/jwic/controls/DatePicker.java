@@ -29,7 +29,8 @@ import org.apache.log4j.Logger;
 
 import de.jwic.base.IControlContainer;
 import de.jwic.base.IncludeJsOption;
-import de.jwic.base.JavaScriptSupport;
+import de.jwic.events.ValueChangedEvent;
+import de.jwic.events.ValueChangedListener;
 
 /**
  * 
@@ -50,6 +51,8 @@ public class DatePicker extends InputBox {
 	private Date date;
 	private Date minDate, maxDate;
 
+	private boolean updateOnChange;
+	
 	private boolean iconTriggered = false;
 	private TimeZone timeZone;
 
@@ -80,6 +83,34 @@ public class DatePicker extends InputBox {
 		locale = this.getSessionContext().getLocale();
 		this.setDateFormat(this.getSessionContext().getDateFormat());
 		this.setTimeZone(getSessionContext().getTimeZone());
+		field.addValueChangedListener(new ValueChangedListener() {
+			
+			@Override
+			public void valueChanged(ValueChangedEvent event) {
+				
+				Date oldDate = getDate();
+				Date newDate = null;
+				currentTime = null;
+				
+				String newVal = event.getNewValue();
+				
+				if (newVal != null && !newVal.trim().isEmpty()) {
+					Long newLong = null;
+					try {
+						newLong = Long.parseLong(newVal);
+					} catch (NumberFormatException ex) {
+						throw new RuntimeException("Error while parsing date long value");
+					}
+					
+					currentTime = newLong;
+					newDate = getTimezoneSpecificDate(currentTime);
+				}
+
+				setDate(newDate);
+				notifyListeners(oldDate,newDate);
+			}
+		});
+
 	}
 
 	/**
@@ -151,16 +182,19 @@ public class DatePicker extends InputBox {
 	 * 
 	 */
 	public void setDate(Date date) {
-		Date oldDate = this.getDate();
+		//Date oldDate = this.getDate();
 		this.date = date;
 		if(date != null){
 			long offset = getTimeZone().getOffset(date.getTime());
 			currentTime = offset + date.getTime();
+			this.field.setValue(String.valueOf(currentTime));
 		}else {
 			currentTime = null;
+			this.field.setValue("");
+
 		}
 		this.requireRedraw();
-		this.notifyListeners(oldDate, date);
+		
 
 	}
 	
@@ -204,7 +238,7 @@ public class DatePicker extends InputBox {
 	 * 
 	 * 
 	 */
-	public void addDateChangedListener(DateChangedListener dcl) {
+	public void addDateChangedListener(final DateChangedListener dcl) {
 		this.listeners.add(dcl);
 	}
 
@@ -369,6 +403,22 @@ public class DatePicker extends InputBox {
 	 */
 	public void setMaxDate(Date maxDate) {
 		this.maxDate = maxDate;
+	}
+	
+	/**
+	 * @return
+	 */
+	@IncludeJsOption
+	public boolean isUpdateOnChange() {
+		return updateOnChange;
+	}
+	
+	
+	/**
+	 * @param updateOnChange
+	 */
+	public void setUpdateOnChange(boolean updateOnChange) {
+		this.updateOnChange = updateOnChange;
 	}
 
 }

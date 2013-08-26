@@ -1691,7 +1691,7 @@ JWic.controls = {
 			inpElm.unbind("focus")
 				.unbind("blur")
 				.unbind("keyup");
-			
+
 		},
 		
 		keyHandler : function(e) {

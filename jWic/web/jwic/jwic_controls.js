@@ -1659,14 +1659,18 @@ JWic.controls = {
 		initialize : function(inpElm) {
 			var InputBoxControl = JWic.controls.InputBoxControl;
 			inpElm.bind("focus", function () {
-				var input = jQuery(this);
-				if (input.val() == input.attr('placeholder')) {
+				var input = jQuery(this),
+					val = input.val();
+				console.warn('focus');
+				
+				if (val === input.attr('placeholder') || val === '') {
 					input.val('');
 					input.removeClass('x-empty');
 				}
 			}).bind("blur", function () {
-				var input = jQuery(this);
-				if (input.val() == '' || input.val() == input.attr('placeholder')) {
+				var input = jQuery(this),
+					val = input.val();
+				if (val === '' || val === input.attr('placeholder')) {
 					input.addClass('x-empty');
 					input.val(input.attr('placeholder'));
 				}

@@ -274,26 +274,17 @@ var JWic = {
 		if (elem) {
 			if (showBlocker) {
 				JWic.cbSeq++;
+
+			}
+			if (showBlocker) {
+
 				var $doc = jQuery(document);
 				var docHeight = $doc.height();
 				var docWidth = $doc.width();
-
-				if (msg) {
-					$win = jQuery(window);
-					var nTop = (($win.height() - msg.height()) / 2) + $win.scrollTop();
-					var nLeft = (($win.width() - msg.width()) / 2) + $win.scrollLeft();
-					msg.css(
-						{
-							position : 'absolute',
-							top: nTop + 'px',
-							left: nLeft + 'px'
-						}
-					);
-				}
-			}
-			if (showBlocker) {
 				elem.show();
 				elem.css('height',docHeight-4);
+				elem.css('width' ,docWidth );
+				elem.css('background', "");
 				if (msg) msg.show();
 				window.setTimeout("JWic.showLongDelay(" + JWic.cbSeq + ")", 1000);
 			} else {
@@ -555,8 +546,11 @@ var JWic = {
 
 };
 
-JWic.util = {
-		clearSelection : function() {
+JWic.util = (function(){ 
+	
+	var util = {};
+	
+		util.clearSelection = function() {
 			if(document.selection && document.selection.empty) {
 				try { 
 					document.selection.empty(); 
@@ -567,9 +561,9 @@ JWic.util = {
 					sel.removeAllRanges() ;
 				}
 			}
-		},
+		};
 		
-		removeElement: function(val, removeMe, seperator) {
+		util.removeElement = function(val, removeMe, seperator) {
 			if (!seperator) seperator = ";";
 			var x = val.split(seperator);
 			var n = "";
@@ -582,16 +576,16 @@ JWic.util = {
 				}
 			});
 			return n;
-		},
+		};
 		
-		JQryEscape : function (str){
+		util.JQryEscape = function (str){
 			return str.replace(/([;&,\.\+\*\~':"\!\^#$%@\[\]\(\)=>\|])/g, '\\$1');
-		},
+		};
 		
 		/*
 		 * Converts simple date format compatible string into jQuery compatible date format
 		 */
-		convertToJqueryDateFormat : function (localFormatString){
+		util.convertToJqueryDateFormat = function (localFormatString){
 		 
 		    //Year
 		    if(localFormatString.search(/y{3,}/g) >=0){                 /* YYYY */
@@ -639,8 +633,169 @@ JWic.util = {
 		    
 		    JWic.log(localFormatString);
 		    return localFormatString;
+		};
+		/**
+		 * Reduces an array to one single element bases on the operation passed into it
+		 * Usefull for verious array operations.  
+		 * ex 1:
+		 * 	function sum(a,b){
+		 * 		return a+b;
+		 * }
+		 * 
+		 * var x = reduce(sum,0,[1,2,3]);
+		 * 
+		 * x will equal 6
+		 * 
+		 * ex 2:
+		 * function compose(f,g){
+		 * 		return function(x){
+		 * 			return f(g(x));
+		 * 		}
+		 * }
+		 * 
+		 * say we have serveral function like so:
+		 * 		f -> a ->b
+		 * 		g -> b -> c
+		 * 		h -> c -> d
+		 * 
+		 * with reduce we can compose then to 1 function ( comp -> a -> d) like so
+		 * 
+		 * var comp = reduce(compose,indentity, [f,g,h]);
+		 * 
+		 * comp will be a function from a to d (identity is the neutral element for function composition f(x) = x )
+		 * 
+		 * @param operation - the reduction operation
+		 * @param accumulator - the initial value of the operation. tippicly the neutral element of the operation. if undefined is passed the the first value of the array is used
+		 * @param array - the array of element on which the reduction operation is performed
+		 * @returns 1 element representing the reduced array
+		 */
+		util.reduce = function reduce(operation,accumulator,array){
+			var index = -1,
+				length = array.length;
+			if(!accumulator){
+				++index;
+				accumulator = array[0];
+			}
+			while(++index < length){
+				accumulator = operation(accumulator,array[index],index,array);
+			}
+			return accumulator;
+		};
+		/**
+		 * Creates a function that represents the 'func' function (passed as arg) with the first x arguments preloaded
+		 * ex:
+		 * function add(a,b){
+		 * 		return a+b;
+		 * }
+		 * 
+		 * var add1 = partial(add,[1]);
+		 * 
+		 * then add1(41) === 42
+		 * @param func - the function that will have partially applied arguments
+		 * @param args - the arguments to be partially applied
+		 * @returns {Function} the partially applied function
+		 */
+		util.partial = function partial(func, args){
+			return function(){
+				return func.apply(this,args.concat(Array.prototype.slice.call(arguments)));
+			}
+		};
+		/**
+		 * private function
+		 * 
+		 * composes 2 functions of 1 argument
+		 * 
+		 * ex:
+		 *  function f(x){return x+1;}
+		 * 	function g(y){return y+1;}
+		 * 
+		 * var FcompG = compose2(f,g);
+		 * 
+		 * FcompG(1) === f(g(1)) === 3
+		 * 
+		 */
+		var compose2 = function compose2(f,g){
+			return function(x){
+				return f(g(x));
+			}
+		};
+		/**
+		 * Takes an array of function of 1 argument an composed them together into 1 function.
+		 * ex:
+		 * function add1 (x){
+		 * 	return x+1;
+		 * }
+		 * 
+		 * function add2(x){
+		 * 	return x+2;
+		 * }
+		 * var add3 = compose([add1,add2]);
+		 * 
+		 * add3 is a function that added 3 to the param thats passed so that
+		 * add3(39) === add1(add2(39)) === 42
+		 * 
+		 * @param array - a NON-empty array of functions to be composed
+		 * @returns a function that represents the composition of the array of functions
+		 */
+		util.compose = util.partial(util.reduce,[compose2,undefined]);
+		
+		/**
+		 * function that takes a prop name and an object and return the prop of the object
+		 * 
+		 * ex:
+		 * var foo = {
+		 * 		name: 'Bogdan',
+		 * 		theMeeningOfLife : 42
+		 * }
+		 * 
+		 * prop('name',foo) === 'Bogdan'
+		 * prop('theMeeningOfLife',foo) === 42
+		 * 
+		 * ex2 : 
+		 * Using the partial funciton
+		 * 
+		 * var foo = ... //same foo as in ex1
+		 * 
+		 * var getName = partial(prop,['name']);
+		 * 
+		 * getName(foo) === 'Bogdan';
+		 * 
+		 * 
+		 * @param propName
+		 * @returns {Function}
+		 * 
+		 */
+		util.prop = function prop(propName,object){
+			return object[propName];
+		};
+		
+		/**
+		 * Trasform and array of type A to an array of type B
+		 * 
+		 * ex:
+		 * var addHello = function(x){
+		 * 		return 'Hello ' + x;
+		 * }
+		 * 
+		 * var array = [1,2,3];
+		 * 
+		 * map(addHello,array) === ['Hello 1','Hello 2','Hello 3']
+		 * 
+		 * 
+		 */
+		util.map = function map(transformer,array){
+			var index = -1;
+			var length = array.length
+			var result = [];
+			while( ++index < length ){
+				result.push(transformer(array[index],index,array));
+			}
+			return result;
 		}
-}
+		
+		
+	return  util;
+}());
 
 /**
  * Common UI Functions.

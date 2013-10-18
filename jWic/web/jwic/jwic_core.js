@@ -283,7 +283,7 @@ var JWic = {
 				var docWidth = $doc.width();
 				elem.show();
 				elem.css('height',docHeight-4);
-				elem.css('width' ,docWidth );
+				elem.css('width' ,'100%' );
 				elem.css('background', "");
 				if (msg) msg.show();
 				window.setTimeout("JWic.showLongDelay(" + JWic.cbSeq + ")", 1000);

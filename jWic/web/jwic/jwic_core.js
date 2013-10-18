@@ -274,26 +274,17 @@ var JWic = {
 		if (elem) {
 			if (showBlocker) {
 				JWic.cbSeq++;
+
+			}
+			if (showBlocker) {
+
 				var $doc = jQuery(document);
 				var docHeight = $doc.height();
 				var docWidth = $doc.width();
-
-				if (msg) {
-					$win = jQuery(window);
-					var nTop = (($win.height() - msg.height()) / 2) + $win.scrollTop();
-					var nLeft = (($win.width() - msg.width()) / 2) + $win.scrollLeft();
-					msg.css(
-						{
-							position : 'absolute',
-							top: nTop + 'px',
-							left: nLeft + 'px'
-						}
-					);
-				}
-			}
-			if (showBlocker) {
 				elem.show();
 				elem.css('height',docHeight-4);
+				elem.css('width' ,docWidth );
+				elem.css('background', "");
 				if (msg) msg.show();
 				window.setTimeout("JWic.showLongDelay(" + JWic.cbSeq + ")", 1000);
 			} else {

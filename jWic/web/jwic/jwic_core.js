@@ -643,9 +643,9 @@ JWic.util = (function(){
 		 * 		g -> b -> c
 		 * 		h -> c -> d
 		 * 
-		 * with reduce we can compose then to 1 function ( comp -> a -> d) like so
+		 * with reduce we can compose them to 1 function ( comp -> a -> d) like so
 		 * 
-		 * var comp = reduce(compose,indentity, [f,g,h]);
+		 * var comp = reduce(compose,indentity, [f,g,h]); (note that there already is a function defined for this in this exact way. the JWic.util.compose funciton)
 		 * 
 		 * comp will be a function from a to d (identity is the neutral element for function composition f(x) = x )
 		 * 
@@ -766,7 +766,31 @@ JWic.util = (function(){
 		 * 
 		 * map(addHello,array) === ['Hello 1','Hello 2','Hello 3']
 		 * 
+		 * ex2:
+		 * 		useing the partial function (JWic.util.partial) and prop function (JWic.util.prop);
+		 * 	
+		 * 	say we have an AJAX call that return an array of object of type Foo (has username and emailAddress props for example)
 		 * 
+		 * var fooArray = ...;
+		 * 
+		 * and we want a list of usernames from a list of Foo to display on the page somewhere, then we can do:
+		 * 
+		 * var getUserName = JWic.util.partial(JWic.util.prop,['username']);
+		 * 
+		 * var usernameArray = map(getUserName,fooArray);
+		 * 
+		 * or we can also cache the whole map function like this:
+		 * 	
+		 * var extractUserNames = JWic.util.partial(JWic.util.map,[getUserName]);//this is knows a 'pluck' function F.Y.I.
+		 * var usernameArray = extractUserNames(fooArray);
+		 * 
+		 * 
+		 * in both cases the values stored in 'usernameArray' are the values that you get from the foo object contained in 'fooArray'
+		 * 
+		 * small side note:
+		 * 		because jQuery return an array (array-like object actually but it makes no difference) of html elements JWic.util.map can be used with a jQuery object as well, 
+		 * 	just in case we ever want to add some custom jQuery plugin to handle so custom node or something. jQuery already has a map function ex: jQuery('someSelector').map(function(){...});  but in jWic we should use JWic's map function for consitency.
+		 *  jQuery.map(array,function) is also an alternative to JWic.util.map however its not as easily composeable since the array is the first args.
 		 */
 		util.map = function map(transformer,array){
 			var index = -1;
@@ -778,6 +802,29 @@ JWic.util = (function(){
 			return result;
 		}
 		
+		/**
+		 * the identity function. this is a neutral function that just returns the first arguments that get passed in.
+		 * usefull for cases where you would want a default value for a callback
+		 * 
+		 * ex: 
+		 * 		function doStuff(args,optionalCallback){
+		 * 			optionalCallback = optionalCallback || JWic.util.identity; //avoid creating an aditional function for nothing, just reuse this the identity function
+		 * 		}
+		 * 
+		 * ex2: nice way to setup a debug logging
+		 * 	
+		 * 	if(DEBUG){
+		 * 		someLoggingFunction = function(x){
+		 * 			console.log(x);
+		 * 		}
+		 * }else{
+		 * 		someLoggingFunction = JWic.util.identity;//it does nothing anyway but we can still have it called in the code and we avoid npe-like errors
+		 * }
+		 * 
+		 * @param x - the value that get return
+		 * @return - the param that was passed (x)
+		 */
+		util.identity = function identity(x){ return x;}
 		
 	return  util;
 }());

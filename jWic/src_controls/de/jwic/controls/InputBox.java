@@ -11,6 +11,7 @@ import java.util.List;
 import de.jwic.base.Control;
 import de.jwic.base.Field;
 import de.jwic.base.IControlContainer;
+import de.jwic.base.IncludeJsOption;
 import de.jwic.base.JavaScriptSupport;
 import de.jwic.base.Page;
 import de.jwic.base.SessionContext;
@@ -150,11 +151,20 @@ public class InputBox extends HTMLElement {
 	public Field getField() {
 		return field;
 	}
+	/**
+	 * 
+	 * @return the id of the hidden input field
+	 */
+	@IncludeJsOption
+	public String getFieldId(){
+		return field != null ? field.getId() : "";
+	}
 	
 	/**
 	 * Returns the text in the textbox.
 	 * @return
 	 */
+	@IncludeJsOption
 	public String getText() {
 		return field.getValue();
 	}
@@ -171,6 +181,7 @@ public class InputBox extends HTMLElement {
 	/**
 	 * @return Returns the maxLength.
 	 */
+	@IncludeJsOption
 	public int getMaxLength() {
 		return maxLength;
 	}
@@ -185,6 +196,7 @@ public class InputBox extends HTMLElement {
 	/**
 	 * @return Returns the multiLine.
 	 */
+	@IncludeJsOption
 	public boolean isMultiLine() {
 		return multiLine;
 	}
@@ -198,6 +210,7 @@ public class InputBox extends HTMLElement {
 	/**
 	 * @return Returns the rows.
 	 */
+	@IncludeJsOption
 	public int getRows() {
 		return rows;
 	}
@@ -211,6 +224,7 @@ public class InputBox extends HTMLElement {
     /**
      * @return Returns the cols.
      */
+	@IncludeJsOption
     public int getCols() {
         return cols;
     }
@@ -224,6 +238,7 @@ public class InputBox extends HTMLElement {
 	/**
 	 * @return Returns true if the input field is of type "password".
 	 */
+    @IncludeJsOption
 	public boolean isPassword() {
 		return password;
 	}
@@ -258,6 +273,7 @@ public class InputBox extends HTMLElement {
 	/**
 	 * @return Returns the listenKeyCode.
 	 */
+	@IncludeJsOption
 	public int getListenKeyCode() {
 		return listenKeyCode;
 	}
@@ -270,6 +286,7 @@ public class InputBox extends HTMLElement {
 	/**
 	 * @return Returns the readonly.
 	 */
+	@IncludeJsOption
 	public boolean isReadonly() {
 		return readonly;
 	}
@@ -284,6 +301,7 @@ public class InputBox extends HTMLElement {
 	 * @see #setUpdateOnBlur(boolean)
 	 * @return the updateOnBlur
 	 */
+	@IncludeJsOption
 	public boolean isUpdateOnBlur() {
 		return updateOnBlur;
 	}
@@ -302,6 +320,7 @@ public class InputBox extends HTMLElement {
 	/**
 	 * @return the emptyInfoText
 	 */
+	@IncludeJsOption
 	public String getEmptyInfoText() {
 		return emptyInfoText;
 	}
@@ -318,6 +337,7 @@ public class InputBox extends HTMLElement {
 	/**
 	 * @return the flagAsError
 	 */
+	@IncludeJsOption
 	public boolean isFlagAsError() {
 		return flagAsError;
 	}

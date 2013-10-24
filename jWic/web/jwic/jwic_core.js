@@ -70,13 +70,12 @@ var JWic = {
 	 * Returns a jQuery encapsulated document element. The element is retrieved
 	 * using document.getElementById and then extended with jQuery. This eliminates the
 	 * need to escape the control ID when using jQuery's native $/jQuery function. 
+	 * 
+	 * ! never return null
+	 * 
 	 */
 	$ : function(id) {
-		var elm = document.getElementById(id);
-		if (elm) {
-			return jQuery(elm);
-		}
-		return null;
+		return jQuery(document.getElementById(id));
 	},
 	
 	/**

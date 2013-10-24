@@ -14,6 +14,7 @@ import de.jwic.base.Control;
 import de.jwic.base.ControlContainer;
 import de.jwic.base.IControlContainer;
 import de.jwic.base.IResourceControl;
+import de.jwic.base.IncludeJsOption;
 import de.jwic.base.JWicException;
 import de.jwic.base.JavaScriptSupport;
 
@@ -60,6 +61,7 @@ public class TabStrip extends ControlContainer implements IResourceControl {
 	 * Returns the index of the active tab.
 	 * @return
 	 */
+	@IncludeJsOption
 	public int getActiveIndex() {
 		if (activeTabName != null) {
 			for (int i = 0; i < tabs.size(); i++) {

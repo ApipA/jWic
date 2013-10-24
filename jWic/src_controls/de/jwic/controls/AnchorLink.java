@@ -5,6 +5,7 @@
 package de.jwic.controls;
 
 import de.jwic.base.IControlContainer;
+import de.jwic.base.IncludeJsOption;
 import de.jwic.base.JavaScriptSupport;
 import de.jwic.controls.menu.Menu;
 
@@ -67,6 +68,7 @@ public class AnchorLink extends SelectableControl {
 	/**
 	 * @return Returns the infoMessage.
 	 */
+	@IncludeJsOption
 	public String getInfoMessage() {
 		return infoMessage;
 	}
@@ -82,6 +84,7 @@ public class AnchorLink extends SelectableControl {
 	/**
 	 * @return the cssClass
 	 */
+	@IncludeJsOption
 	public String getCssClass() {
 		return cssClass;
 	}
@@ -98,6 +101,12 @@ public class AnchorLink extends SelectableControl {
 	public Menu getMenu() {
 		return menu;
 	}
+	
+	@IncludeJsOption
+	public String getMenuId(){
+		return menu != null ? menu.getControlID() : "";
+	}
+	
 	/**
 	 * @param menu the menu to set
 	 */
@@ -107,6 +116,7 @@ public class AnchorLink extends SelectableControl {
 	/**
 	 * @return the tooltip
 	 */
+	@IncludeJsOption
 	public String getTooltip() {
 		return tooltip;
 	}

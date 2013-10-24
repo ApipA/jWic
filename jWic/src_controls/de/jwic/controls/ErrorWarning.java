@@ -32,8 +32,7 @@ import de.jwic.base.JavaScriptSupport;
  * @author Buzas Adrian
  */
 @JavaScriptSupport
-public class ErrorWarning extends Control
-{
+public class ErrorWarning extends Control {
 	private static final long serialVersionUID = 1L;
 
 	private Exception exception = null;
@@ -191,6 +190,7 @@ public class ErrorWarning extends Control
 	 *
 	 * @return java.lang.String
 	 */
+	@IncludeJsOption
 	public String getStack()
 	{
 		return strStack;
@@ -246,6 +246,7 @@ public class ErrorWarning extends Control
 	 * @author Ronny Pfretzschner
 	 * @return true or false
 	 */
+	@IncludeJsOption
 	public boolean isShowStackTrace()
 	{
 		return showStackTrace;	
@@ -261,6 +262,7 @@ public class ErrorWarning extends Control
 	/**
 	 * @return Returns the closable.
 	 */
+	@IncludeJsOption
 	public boolean isClosable() {
 		return closable;
 	}

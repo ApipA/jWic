@@ -19,22 +19,24 @@
  * are used (which is in most of the cases).
  */
 
-JWic.controls = {
+JWic.controls = (function(){
+	var controls = {};
+	
 
 	/**
 	 * de.jwic.controls.CheckBoxGroup
 	 */
-	CheckBoxGroup : {
+	controls.CheckBoxGroup = {
 		handleChange : function (controlId, field, element) {
 			var field = JWic.$(field);
 			field.val(element.checked ? element.value : "");
 		} 
-	},
+	};
 
 	/**
 	 * de.jwic.async.ProcessInfo
 	 */
-	ProcessInfo : {
+	controls.ProcessInfo = {
 		
 		initialize : function(controlId, options) {
 			var piProgBar = JWic.$("pi_progressbar_" + controlId);
@@ -120,12 +122,12 @@ JWic.controls = {
 			}
 			
 		}
-	},
+	};
 		
 	/**
 	 * de.jwic.controls.ProgressBar code
 	 */
-	ProgressBar : {
+	controls.ProgressBar = {
 		autoRefresh : function(controlId, delay) {
 			window.setTimeout(function(){
 				JWic.controls.ProgressBar.refreshContent(controlId)
@@ -149,184 +151,12 @@ JWic.controls = {
 		handleResponse : function(controlId, ajaxReponse) {
 			
 		}
-	},
+	};
 		
-	/**
-	 * InputBoxControl script extensions.
-	 */
-	NumericInputControl : {
-		/**
-		 * Initialize a new control.
-		 */
-		initialize : function(inpElm, id, options) {
-			var hiddenInput = jQuery(document.getElementById(id+"_field"));
-			inpElm.bind("focus", JWic.controls.NumericInputControl.focusHandler);
-			inpElm.bind("blur", JWic.controls.NumericInputControl.lostFocusHandler);
-			inpElm.change(JWic.controls.NumericInputControl.changeHandler);
-			
-			inpElm.autoNumeric('init', options); 
-			inpElm.autoNumeric('set', hiddenInput.val());
-			
-			
-			if (inpElm.attr("xListenKeyCode") != 0) {
-				inpElm.bind("keyup", JWic.controls.NumericInputControl.keyHandler);
-			}
-			
-			if (inpElm.attr("xEmptyInfoText")) {
-				if(inpElm.attr("xIsEmpty") == "true" && 
-					(inpElm.val() == inpElm.attr("xEmptyInfoText") || inpElm.val() == "")) {
-					inpElm.addClass("x-empty");
-					inpElm.val(inpElm.attr("xEmptyInfoText"));
-				} else {
-					inpElm.attr("xIsEmpty", "false");
-					inpElm.removeClass("x-empty");
-				}
-			}
-			if(options.updateOnBlur)
-				inpElm.bind('blur',function() {
-						JWic.fireAction(id, 'onBlur', '');
-					}
-				);
-			
-			if(options.readonly)
-				jQuery(inpElm).addClass("x-readonly");
-			if(options.flagAsError)
-				jQuery(inpElm).addClass("x-error");
-			
-			
-			// override the getValue() method to "fix" the serialization
-			inpElm.getValue = function() {
-				if (this.attr("xEmptyInfoText") && this.attr("xIsEmpty") == "true") {
-					return "";
-				} else {
-					return this.value;
-				}
-			}
-			
-		},
-		
-		/**
-		 * Clean up..
-		 */
-		destroy : function(inpElm) {
-			inpElm.unbind();
-		},
-		
-		changeHandler : function(e) {
-			var elm =  jQuery(e.target);
-			var elmHidden = jQuery('#'+JWic.util.JQryEscape(e.target.id + "_field"));
-			var value = elm.autoNumeric('get');
-			elmHidden.val(value);
-		},
-		
-		/**
-		 * Invoked when the focus is received.
-		 */
-		focusHandler : function(e) {
-			var elm =  jQuery(e.target);
-			elm.addClass("x-focus");
-			
-			if (elm.attr("xEmptyInfoText")) {
-				if (elm.attr("xIsEmpty") == "true") {
-					elm.val('');
-					elm.removeClass("x-empty");
-					elm.attr("xIsEmpty", "false");
-				} 
-			}
-			
-		},
-		/**
-		 * Invoked when the focus is lost.
-		 */
-		lostFocusHandler : function(e) {
-			var elm =  jQuery(e.target);
-			
-			elm.removeClass("x-focus");
-			if (elm.attr("xEmptyInfoText")) {
-				if (elm.val() == "") { // still empty
-					elm.addClass("x-empty");
-					elm.val(elm.attr("xEmptyInfoText"));
-					elm.attr("xIsEmpty", "true");
-				} else {
-					elm.attr("xIsEmpty", "false");
-				}
-			}
-		},
-		
-		keyHandler : function(e) {
-			var elm =  jQuery(e.target);
-			
-			if (e.keyCode == elm.attr("xListenKeyCode")) {
-				JWic.fireAction(elm.attr('id'), 'keyPressed', '' + e.keyCode);
-			}
-		}
-		
-	},
-	/**
-	 * ValidatedInputBox
-	 * 
-	 * InputBox Control with regex validation on client side, otherwise its just like the regular inputBox
-	 */
-	ValidatedInputBox : {
-		initialize : function(control,options){
-			//call the 'super' constructor
-			JWic.controls.InputBoxControl.initialize(control);
-			
-			//compose 2 functions. yep i went there :)
-			function compose_2(func,func2){
-				return function(x){
-					return func.call(this,func2.call(this,x));
-				}
-			}
-			//checkAndUpdate takes a inputControl it validates it and adds/removes the x-error class input based on the regExp
-			//3 functions in one :)
-			var checkAndUpdate = JWic.util.reduce([this.setValid(control), this.test(options.regExp), this.getValue(control)], compose_2);
-			
-			//bind the keyup listener to check every key press
-			control.keyup(function(){
-				checkAndUpdate(this);
-			});
-			//do the initial check.
-			checkAndUpdate(control);
-		},
-		//test a string with a pattern, return true if ok false otherwise
-		test : function (pattern){
-			var regExp = new RegExp(pattern);
-			return function(str){
-				return regExp.test(str);
-			}
-		},
-		//adds or removed the x-error class on a control bases of the isValid argument (true == removeClass, false == addClass) 
-		setValid : function (control){
-			control = jQuery(control);//make jQuery (just in case)
-			
-			return function(isValid){//heres the isValid argument
-				if(isValid){
-					control.removeClass('x-error');
-				}else{
-					control.addClass('x-error');
-				}
-				return isValid;
-			}
-		},
-		//return the value of a control. lazy return so i can compose it other functions.
-		getValue : function getValue(control){
-			control = jQuery(control);//make jQuery
-			return function(){
-				return control.val();
-			}
-		},
-		
-	},
 	
-	/**
-	 * DatePicker script extensions.
-	 */
-	DatePicker : {
-		/**
-		 * Initialize a new control.
-		 */
-		initialize : function(inpElm, controlId, options) {
+	
+	var DatePickerUtil = {
+		init : function(type,inpElm, controlId, options) {
 			/*
 			 * clone the region info
 			 * so you can maintain language date but change date format only on this instance of the datepicker
@@ -359,15 +189,15 @@ JWic.controls = {
 				JWic.fireAction(controlId,'localeNotFound','');//this is needed to revert to default locale on the server as well. it should not fire normally but just in case
 			}
 			if(options.iconTriggered){
-				datepicker.datepicker("option",	"showOn", "button");
-				datepicker.datepicker("option", "buttonImage", 'jwic/calendar/calendar.gif');
-				datepicker.datepicker("option",	"buttonImageOnly", true);
+				datepicker[type]("option",	"showOn", "button");
+				datepicker[type]("option", "buttonImage", 'jwic/calendar/calendar.gif');
+				datepicker[type]("option",	"buttonImageOnly", true);
 			}
 			/*
 			 * init the datepicker
 			 */
 			var id = JWic.util.JQryEscape(controlId);
-			var datepicker = jQuery( "#" + id ).datepicker(options);
+			var datepicker = jQuery( "#" + id )[type](options);
 			
 			//datepicker.datepicker("option",options.region);		
 //			this.setDate(datepicker, currentTime);
@@ -384,8 +214,19 @@ JWic.controls = {
 			this.setupListeners(datepicker,options);
 			
 			return datepicker;
-		},
+		}
+	};
 		
+	/**
+	 * DatePicker script extensions.
+	 */
+	controls.DatePicker = {
+		
+		initialize: JWic.util.partial(DatePickerUtil.init,['datepicker']),
+		
+		/**
+		 * Initialize the control as the DatePicker or a DateTimePicker a new control.
+		 */
 		setupListeners : function(datepicker,options){
 			var DatePicker = this,
 				field = document.forms.jwicform[options.fieldId];
@@ -521,75 +362,21 @@ JWic.controls = {
 			}
 			return null;
 		}
-	},
+	};
 	
 	
 	/**
 	 * DateTimePicker script extensions.
 	 */
-	DateTimePicker : {
+	controls.DateTimePicker = {
 		/**
 		 * Initialize a new control.
 		 */
 		initialize : function(inpElm, controlId, options) {
-			/*
-			 * clone the region info
-			 * so you can maintain language date but change date format only on this instance of the datepicker
-			 */
-			
-			
-			var DatePicker= JWic.controls.DatePicker,
-			 	field = document.forms.jwicform[options.fieldId];
-			
-			if(options.readonly)
-				datepicker.addClass("x-readonly");
-			
-			if(options.flagAsError)
-				datepicker.addClass("x-error");
-			
-			/*
-			 * set date format in needed
-			 */
-			if(options.dateFormat != "noformat")
-				options.dateFormat = JWic.util.convertToJqueryDateFormat(options.dateFormat);
-			else
-				options.dateFormat = undefined; //no format
-			/*
-			 *	default back to English if selected region is undefined 
-			 */
-			if(options.region == undefined){
-				options.region = jQuery.extend(true, {}, jQuery.datepicker.regional['en']);
-				/*
-				 * notify java control to default back to Locale.ENGLISH as well
-				 */
-				JWic.fireAction(controlId,'localeNotFound','');
-			}
-			
 			if(options.timeFormat){
 				options.timeFormat = JWic.util.convertToJqueryDateFormat(options.timeFormat);
 			}
-			
-			/*
-			 * init the datepicker
-			 */
-			var id = JWic.util.JQryEscape(controlId);
-			var datetimepicker = jQuery( "#" + id ).datetimepicker(options);
-			
-						
-			//datetimepicker.datetimepicker("option",options.region);		
-			if(field.value){
-				DatePicker.setDate(datetimepicker, field.value, field);
-			}
-			
-//			if(options.masterId){
-//				var masterDateTextBox = jQuery('#' + JWic.util.JQryEscape('${control.masterId}'));
-//				JWic.controls.DatePicker.masterSlave(masterDateTextBox,datetimepicker);
-//			}
-
-			
-			DatePicker.setupListeners(datetimepicker,options);
-			
-			return datetimepicker;
+			return DatePickerUtil.init.call(controls.DatePicker,'datetimepicker',inpElm,controlId,options);//a bit awkward but hey, no duplication
 		},
 		
 		/**
@@ -598,13 +385,13 @@ JWic.controls = {
 		destroy : function(inpElm) {
 			
 		}
-	},
+	};
 	
 	
 	/**
 	 * FileUpload control
 	 */
-	FileUpload : {
+	controls.FileUpload = {
 		initialize : function (self, controlId, options) {
 
 			self = jQuery(self);
@@ -655,12 +442,12 @@ JWic.controls = {
 			});
 			
 		}
-	},
+	};
 		
 	/**
 	 * Window control script extensions.
 	 */
-	Window : {
+	controls.Window = {
 
 		initialize : function(controlId, options) {
 			var win = JWic.$("win_" + controlId);
@@ -894,12 +681,12 @@ JWic.controls = {
 			}
 		}
 		
-	},
+	};
 	
 	/**
 	 * de.jwic.controls.combo.Combo functions.
 	 */
-	Combo : {
+	controls.Combo = {
 		documentClickHander : function(){
 			
 		},
@@ -1695,9 +1482,9 @@ JWic.controls = {
 		}
 
 
-	},
+	};
 	
-	AnchorLink : {
+	controls.AnchorLink = {
 		initialize : function(link, ctrlId, options) {
 			if (options.menuId) {
 				link.data("menuId", options.menuId);
@@ -1745,12 +1532,12 @@ JWic.controls = {
 				return true;
 			}
 		}
-	},
+	};
 	
 	/*
 	 * de.jwic.controls.Button control
 	 */
-	Button : {
+	controls.Button = {
 		initialize : function(btn, ctrlId, options) {
 			JWic.log("Initializing new button " + btn);
 			
@@ -1830,24 +1617,58 @@ JWic.controls = {
 				JWic.fireAction(ctrlId, 'click', '');
 			}	
 		}
-	},
+	};
+	
+	
+	var InputBoxControlUtil = {
+			/**
+			 * Invoked when the focus is received.
+			 */
+			focusHandler : function(e) {
+				var elm =  jQuery(e.target);
+				elm.addClass("x-focus");
+			},
+			/**
+			 * Invoked when the focus is lost.
+			 */
+			lostFocusHandler : function(e) {
+				var elm =  jQuery(e.target);
+				elm.removeClass("x-focus");
+			},
+			
+			keyHandler : function(e) {
+				var elm =  jQuery(e.target);
+				
+				if (e.keyCode === parseInt(elm.attr("xListenKeyCode"),10)) {
+					JWic.fireAction(elm.attr('id'), 'keyPressed', '' + e.keyCode);
+					return false;
+				}
+				
+			},
+			defaultSuppress : function(e){
+				var elm = jQuery(e.target);
+				if(e.keyCode === parseInt(elm.attr("xListenKeyCode"),10)){
+					e.preventDefault();
+					return false;
+				}
+			}
+	};
 	
 	/**
 	 * InputBoxControl script extensions.
 	 */
-	InputBoxControl : {
+	controls.InputBoxControl = {
 		/**
 		 * Initialize a new control.
 		 */
 		initialize : function(inpElm,id,options) {
-			var InputBoxControl = JWic.controls.InputBoxControl;
-			inpElm.bind("focus",InputBoxControl.focusHandler)
-				  .bind("blur", InputBoxControl.lostFocusHandler)
+			inpElm.bind("focus",InputBoxControlUtil.focusHandler)
+				  .bind("blur", InputBoxControlUtil.lostFocusHandler)
 				  .blur();
 			
 			if (inpElm.attr("xListenKeyCode") != 0) {
-				inpElm.bind("keydown", InputBoxControl.defaultSuppress);
-				inpElm.bind("keyup", InputBoxControl.keyHandler);
+				inpElm.bind("keydown", InputBoxControlUtil.defaultSuppress);
+				inpElm.bind("keyup", InputBoxControlUtil.keyHandler);
 			}
 			
 			// override the getValue() method to "fix" the serialization
@@ -1862,61 +1683,110 @@ JWic.controls = {
 				inpElm.addClass("x-readonly");
 			if(options.flagAsError)
 				inpElm.addClass("x-error");
+			
+			return inpElm;
 		},
 		
 		/**
 		 * Clean up..
 		 */
 		destroy : function(inpElm) {
-			var InputBoxControl = JWic.controls.InputBoxControl;
-			inpElm.unbind("focus", InputBoxControl.focusHandler);
-			inpElm.unbind("blur", InputBoxControl.lostFocusHandler);
-			
-			if (inpElm.attr("xListenKeyCode") != 0) {
-				inpElm.unbind("keyup", InputBoxControl.keyHandler);
-				inpElm.unbind("keydown", InputBoxControl.defaultSuppress);
-				
-			}
-		},
-		
-		/**
-		 * Invoked when the focus is received.
-		 */
-		focusHandler : function(e) {
-			var elm =  jQuery(e.target);
-			elm.addClass("x-focus");
-		},
-		/**
-		 * Invoked when the focus is lost.
-		 */
-		lostFocusHandler : function(e) {
-			var elm =  jQuery(e.target);
-			elm.removeClass("x-focus");
-		},
-		
-		keyHandler : function(e) {
-			var elm =  jQuery(e.target);
-			
-			if (e.keyCode === parseInt(elm.attr("xListenKeyCode"),10)) {
-				JWic.fireAction(elm.attr('id'), 'keyPressed', '' + e.keyCode);
-				return false;
-			}
-			
-		},
-		defaultSuppress : function(e){
-			var elm = jQuery(e.target);
-			if(e.keyCode === parseInt(elm.attr("xListenKeyCode"),10)){
-				e.preventDefault();
-				return false;
-			}
+			inpElm.unbind();
 		}
 		
-	},
+	};
+	
+	/**
+	 * InputBoxControl script extensions.
+	 */
+	
+	var NumericInputControlUtil = {
+			changeHandler : function(elmHidden,e) {
+				var elm =  jQuery(e.target);
+				var value = elm.autoNumeric('get');
+				elmHidden.val(value);
+			}
+	}
+	controls.NumericInputControl = {
+		/**
+		 * Initialize a new control.
+		 */
+		initialize : function(inpElm, id, options) {
+			controls.InputBoxControl.initialize(inpElm, id, options);
+			var hiddenInput = JWic.$(id+"_field");
+			inpElm.change(JWic.util.partial(NumericInputControlUtil.changeHandler,[hiddenInput]));
+			inpElm.autoNumeric('init', options); 
+			inpElm.autoNumeric('set', hiddenInput.val());
+		},
+		
+		/**
+		 * Clean up..
+		 */
+		destroy : controls.InputBoxControl.destroy		
+	};
+	
+	
+	var ValidatedInputBoxUtil = {
+			//test a string with a pattern, return true if ok false otherwise
+			test : function (pattern){
+				var regExp = new RegExp(pattern);
+				return function(str){
+					return regExp.test(str);
+				}
+			},
+			//adds or removed the x-error class on a control bases of the isValid argument (true == removeClass, false == addClass) 
+			setValid : function (control){
+				control = jQuery(control);//make jQuery (just in case)
+				
+				return function(isValid){//heres the isValid argument
+					if(isValid){
+						control.removeClass('x-error');
+					}else{
+						control.addClass('x-error');
+					}
+					return isValid;
+				}
+			},
+			//return the value of a control. lazy return so i can compose it other functions.
+			getValue : function getValue(control){
+				control = jQuery(control);//make jQuery
+				return function(){
+					return control.val();
+				}
+			}	
+	};
+	/**
+	 * ValidatedInputBox
+	 * 
+	 * InputBox Control with regex validation on client side, otherwise its just like the regular inputBox
+	 */
+	controls.ValidatedInputBox = {
+		initialize : function(control,id,options){
+			//call the 'super' constructor
+			controls.InputBoxControl.initialize(control,id,options);
+			
+			//checkAndUpdate takes a inputControl it validates it and adds/removes the x-error class input based on the regExp
+			//3 functions in one :)
+			var checkAndUpdate = JWic.util.compose([ValidatedInputBoxUtil.setValid(control), ValidatedInputBoxUtil.test(options.regExp), ValidatedInputBoxUtil.getValue(control)]);
+			
+			//bind the keyup listener to check every key press
+			control.keyup(function(){
+				checkAndUpdate(this);
+			});
+			//do the initial check.
+			checkAndUpdate(control);
+			
+			return control;
+		},
+		destroy : controls.InputBoxControl.destroy
+		
+	};
+	
 
 	/**
 	 * de.jwic.controls.basics.TabStrip control functions. 
 	 */
-	TabStrip : {
+	controls.TabStrip = {
 			internalActivate : false,
 			
 			initialize : function(tabStrip, ctrlId, options) {
@@ -1966,12 +1836,12 @@ JWic.controls = {
 				tabStrip.tabs("refresh");
 				JWic.controls.TabStrip.internalActivate = false;
 			}
-	},
+	};
 	
 	/**
 	 * de.jwic.controls.Menu
 	 */
-	Menu : {
+	controls.Menu = {
 		initialize : function(controlId, options) {
 			var menu =  JWic.$(controlId);
 			if (options.hidden) {
@@ -2006,12 +1876,12 @@ JWic.controls = {
 			// move the item back to its old parent before destroying it.
 			menu.data("oldParent").append(menu.parent());
 		}
-	},
+	};
 
 	/**
 	 * de.jwic.controls.basics.Accordion control functions. 
 	 */
-	Accordion : {
+	controls.Accordion = {
 			initialize : function(accordion, ctrlId, options) {
 				accordion.accordion(options);
 				accordion.accordion("option", "activate", JWic.controls.Accordion.activateHandler);
@@ -2031,12 +1901,12 @@ JWic.controls = {
 				var accordion = jQuery("#" + JWic.util.JQryEscape(controlId));
 				accordion.accordion("option", "disabled", disable );
 			}
-	},
+	};
 	
 	/**
 	 * de.jwic.controls.coledit.ColumnSelector
 	 */
-	ColumnSelector : {
+	controls.ColumnSelector = {
 		initialize : function(controlId, options) {
 			
 			var sorts = JWic.$('lst_' + controlId),
@@ -2110,8 +1980,9 @@ JWic.controls = {
 				sorts.sortable("destroy");
 			}
 		}
-	},
-	ErrorWarning:{
+	};
+	
+	controls.ErrorWarning = {
 		initialize : function(me,id,options){
 			var timoutTimer,
 				ErrorWarning = this;
@@ -2154,5 +2025,9 @@ JWic.controls = {
 			}
 			
 		}
-	}
-}
+	};
+
+
+return controls;
+}());
+

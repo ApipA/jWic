@@ -54,6 +54,7 @@ public class AnchorLink extends SelectableControl {
 	/**
 	 * @return Returns the title.
 	 */
+	@IncludeJsOption
 	public String getTitle() {
 		return title;
 	}

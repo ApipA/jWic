@@ -158,7 +158,8 @@ JWic.controls = {
 		/**
 		 * Initialize a new control.
 		 */
-		initialize : function(inpElm, hiddenInput, options) {
+		initialize : function(inpElm, id, options) {
+			var hiddenInput = jQuery(document.getElementById(id+"_field"));
 			inpElm.bind("focus", JWic.controls.NumericInputControl.focusHandler);
 			inpElm.bind("blur", JWic.controls.NumericInputControl.lostFocusHandler);
 			inpElm.change(JWic.controls.NumericInputControl.changeHandler);
@@ -181,6 +182,17 @@ JWic.controls = {
 					inpElm.removeClass("x-empty");
 				}
 			}
+			if(options.updateOnBlur)
+				inpElm.bind('blur',function() {
+						JWic.fireAction(id, 'onBlur', '');
+					}
+				);
+			
+			if(options.readonly)
+				jQuery(inpElm).addClass("x-readonly");
+			if(options.flagAsError)
+				jQuery(inpElm).addClass("x-error");
+			
 			
 			// override the getValue() method to "fix" the serialization
 			inpElm.getValue = function() {
@@ -314,45 +326,60 @@ JWic.controls = {
 		/**
 		 * Initialize a new control.
 		 */
-		initialize : function(inpElm, controlId, region, dateFormat, options, currentTime, fieldId) {
+		initialize : function(inpElm, controlId, options) {
 			/*
 			 * clone the region info
 			 * so you can maintain language date but change date format only on this instance of the datepicker
 			 */
-			var region = jQuery.extend(true, {}, jQuery.datepicker.regional[region]),
-			 	DatePicker = JWic.controls.DatePicker,
-			 	field = document.forms.jwicform[fieldId];
-			options.fieldId = fieldId;
+			var	DatePicker = JWic.controls.DatePicker,
+			 	field = document.forms.jwicform[options.fieldId];
+			
+			if(options.readonly)
+				datepicker.addClass("x-readonly");
+			
+			if(options.flagAsError)
+				datepicker.addClass("x-error");
+			
 			
 			/*
 			 * set date format in needed
 			 */
-			if(dateFormat !== "noformat")
-				region.dateFormat = JWic.util.convertToJqueryDateFormat(dateFormat);
-			
+			if(options.dateFormat !== "noformat")
+				options.dateFormat = JWic.util.convertToJqueryDateFormat(options.dateFormat);
+			else
+				options.dateFormat = undefined;
 			/*
 			 *	default back to English if selected region is undefined 
 			 */
-			if(region === undefined){
-				region = jQuery.extend(true, {}, jQuery.datepicker.regional['en']);
+			if(options.region === undefined){
+				options.region = jQuery.extend(true, {}, jQuery.datepicker.regional['en']);
 				/*
 				 * notify java control to default back to Locale.ENGLISH as well
 				 */
 				JWic.fireAction(controlId,'localeNotFound','');//this is needed to revert to default locale on the server as well. it should not fire normally but just in case
 			}
-			
+			if(options.iconTriggered){
+				datepicker.datepicker("option",	"showOn", "button");
+				datepicker.datepicker("option", "buttonImage", 'jwic/calendar/calendar.gif');
+				datepicker.datepicker("option",	"buttonImageOnly", true);
+			}
 			/*
 			 * init the datepicker
 			 */
 			var id = JWic.util.JQryEscape(controlId);
 			var datepicker = jQuery( "#" + id ).datepicker(options);
 			
-			datepicker.datepicker("option",region);		
+			//datepicker.datepicker("option",options.region);		
 //			this.setDate(datepicker, currentTime);
 
 			if(field.value){
 				this.setDate(datepicker, field.value, field);
 			}
+//			if(options.masterId){
+//				var masterDateTextBox = jQuery('#' + JWic.util.JQryEscape('${control.masterId}'));
+//				JWic.controls.DatePicker.masterSlave(masterDateTextBox,datetimepicker);
+//			}
+
 			
 			this.setupListeners(datepicker,options);
 			
@@ -380,15 +407,6 @@ JWic.controls = {
 			});
 		},
 		
-		
-		/*
-		 * set datepicker date from java
-		 */
-		setDate : function(datepicker, currentTime, field){
-			datepicker.datepicker('setDate', JWic.controls.DatePicker.convertDate(currentTime));
-			field.value = this.getUTCDate(datepicker).getTime();
-		},
-		
 		/**
 		 * Clean up..
 		 */
@@ -398,7 +416,7 @@ JWic.controls = {
 		
 		getUTCDate: function (datepicker) {
 			var date = datepicker.datepicker('getDate');
-			return date !== null ? new Date(date.getTime() - date.getTimezoneOffset() * 60000) : {
+			return date ? new Date(date.getTime() - date.getTimezoneOffset() * 60000) : {
 				getTime : function () {
 					return ''; //a mock object with the get time function since getTime is passes to the server
 				}
@@ -463,7 +481,6 @@ JWic.controls = {
 				endDate = endDate || new Date(Number.MAX_VALUE); // its either good or the end of time (to avoid null check :) not a fan of null checking)
 				
 				var maxTimeStamp = check(startDate.getTime(),endDate.getTime());
-				
 				that.setDate(slave, maxTimeStamp);							
 			};
 		},
@@ -490,8 +507,9 @@ JWic.controls = {
 		/*
 		 * set datepicker date from java
 		 */
-		setDate : function(datetimepicker, currentTime){
+		setDate : function(datetimepicker, currentTime,field){
 			datetimepicker.datetimepicker('setDate', this.convertDate(currentTime));
+			jQuery(field).val(this.getUTCDate(datetimepicker).getTime());//wrap in jQuery cause can be null
 		},
 		
 		convertDate : function(currentTime){
@@ -513,37 +531,42 @@ JWic.controls = {
 		/**
 		 * Initialize a new control.
 		 */
-		initialize : function(inpElm, controlId, region, dateFormat, timeFormat, options, currentTime, fieldId) {
+		initialize : function(inpElm, controlId, options) {
 			/*
 			 * clone the region info
 			 * so you can maintain language date but change date format only on this instance of the datepicker
 			 */
 			
 			
-			var region = jQuery.extend(true, {}, jQuery.datepicker.regional[region]),
-				DatePicker= JWic.controls.DatePicker,
-			 	field = document.forms.jwicform[fieldId];
-				options.fieldId = fieldId;
-			 	
+			var DatePicker= JWic.controls.DatePicker,
+			 	field = document.forms.jwicform[options.fieldId];
+			
+			if(options.readonly)
+				datepicker.addClass("x-readonly");
+			
+			if(options.flagAsError)
+				datepicker.addClass("x-error");
+			
 			/*
 			 * set date format in needed
 			 */
-			if(dateFormat != "noformat")
-				region.dateFormat = JWic.util.convertToJqueryDateFormat(dateFormat);
-			
+			if(options.dateFormat != "noformat")
+				options.dateFormat = JWic.util.convertToJqueryDateFormat(options.dateFormat);
+			else
+				options.dateFormat = undefined; //no format
 			/*
 			 *	default back to English if selected region is undefined 
 			 */
-			if(region == undefined){
-				region = jQuery.extend(true, {}, jQuery.datepicker.regional['en']);
+			if(options.region == undefined){
+				options.region = jQuery.extend(true, {}, jQuery.datepicker.regional['en']);
 				/*
 				 * notify java control to default back to Locale.ENGLISH as well
 				 */
 				JWic.fireAction(controlId,'localeNotFound','');
 			}
 			
-			if(timeFormat){
-				options.timeFormat = JWic.util.convertToJqueryDateFormat(timeFormat);
+			if(options.timeFormat){
+				options.timeFormat = JWic.util.convertToJqueryDateFormat(options.timeFormat);
 			}
 			
 			/*
@@ -553,10 +576,16 @@ JWic.controls = {
 			var datetimepicker = jQuery( "#" + id ).datetimepicker(options);
 			
 						
-			datetimepicker.datetimepicker("option",region);		
+			//datetimepicker.datetimepicker("option",options.region);		
 			if(field.value){
 				DatePicker.setDate(datetimepicker, field.value, field);
 			}
+			
+//			if(options.masterId){
+//				var masterDateTextBox = jQuery('#' + JWic.util.JQryEscape('${control.masterId}'));
+//				JWic.controls.DatePicker.masterSlave(masterDateTextBox,datetimepicker);
+//			}
+
 			
 			DatePicker.setupListeners(datetimepicker,options);
 			
@@ -1670,11 +1699,21 @@ JWic.controls = {
 	
 	AnchorLink : {
 		initialize : function(link, ctrlId, options) {
-			if (options.menu) {
-				link.data("menuId", options.menu);
+			if (options.menuId) {
+				link.data("menuId", options.menuId);
 			}
 			link.data("controlId", ctrlId);
-			link.click(JWic.controls.AnchorLink.clickHandler);
+			link.click(this.clickHandler);
+			link.mouseover(this.setWindowStatus(options.infoMessage)).mouseout(this.setWindowStatus(""));
+			if(options.tooltip){
+				link.tooltip({
+					position: {
+						my: "left top",
+						at: "center bottom"
+					}
+				});
+			}
+			
 			
 		},
 		clickHandler : function(e) {
@@ -1692,6 +1731,19 @@ JWic.controls = {
 				JWic.fireAction(ctrlId, 'click', '');
 			}
 			return false;
+		},
+		/**
+		 * setWindowStatus is an event handler builder, if you will.
+		 * it returns a function that sets the status of the window object to the toWhat param when called.
+		 * 
+		 * @param toWhat - to what the window status should be set.
+		 * @return - a function that actually sets the status.
+		 */
+		setWindowStatus : function(toWhat){
+			return function(){
+				window.status = toWhat;
+				return true;
+			}
 		}
 	},
 	
@@ -1787,7 +1839,7 @@ JWic.controls = {
 		/**
 		 * Initialize a new control.
 		 */
-		initialize : function(inpElm) {
+		initialize : function(inpElm,id,options) {
 			var InputBoxControl = JWic.controls.InputBoxControl;
 			inpElm.bind("focus",InputBoxControl.focusHandler)
 				  .bind("blur", InputBoxControl.lostFocusHandler)
@@ -1802,7 +1854,14 @@ JWic.controls = {
 			inpElm.getValue = function() {
 				return inpElm.value;
 			}
-			
+			if(options.updateOnBlur)
+				inpElm.bind('blur',function() {
+					JWic.fireAction(id, 'onBlur', '');
+				});
+			if(options.readonly)
+				inpElm.addClass("x-readonly");
+			if(options.flagAsError)
+				inpElm.addClass("x-error");
 		},
 		
 		/**
@@ -1860,10 +1919,10 @@ JWic.controls = {
 	TabStrip : {
 			internalActivate : false,
 			
-			initialize : function(tabStrip, ctrlId, activeIndex) {
+			initialize : function(tabStrip, ctrlId, options) {
 				tabStrip.tabs({
 					beforeActivate : JWic.controls.TabStrip.activateHandler,
-					active : activeIndex
+					active : options.activeIndex
 				});
 			},
 			
@@ -2050,6 +2109,50 @@ JWic.controls = {
 			if (sorts) {
 				sorts.sortable("destroy");
 			}
+		}
+	},
+	ErrorWarning:{
+		initialize : function(me,id,options){
+			var timoutTimer,
+				ErrorWarning = this;
+			me.find('.closeBtn').one('click',function(){
+				JWic.fireAction(id, 'doClose', '',function(){
+					if(timeoutTimer){
+						window.clearTimeout(timeoutTimer);
+					}
+					me.slideUp();
+				});
+			});
+			
+			if(options.autoClose && options.autoCloseDelay)
+				timeoutTimer = window.setTimeout(function(){
+					me.slideUp(ErrorWarning.doHide(id,timoutTimer));
+				},options.autoCloseDelay);
+				
+			if(options.visible && !options.closed)
+				me.slideDown();
+			
+			if(options.visible && options.closed)
+				me.show().slideUp(ErrorWarning.doClose(id,timeoutTimer));
+			
+			
+		},
+		doClose : function(id,timeoutTimer){
+			return function(){
+				if(timeoutTimer){
+					window.clearTimeout(timeoutTimer);
+				}
+				JWic.fireAction(id,'doHide','');
+			}
+		},
+		doHide : function(id,timeoutTimer){
+			return function (){
+				if(timeoutTimer){
+					window.clearTimeout(timeoutTimer);
+				}
+				JWic.fireAction(id,'doClose','');
+			}
+			
 		}
 	}
 }

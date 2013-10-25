@@ -25,6 +25,7 @@ import java.util.Map;
 import de.jwic.base.Control;
 import de.jwic.base.IControlContainer;
 import de.jwic.base.ImageRef;
+import de.jwic.base.IncludeJsOption;
 import de.jwic.base.JavaScriptSupport;
 import de.jwic.controls.actions.IAction;
 
@@ -208,6 +209,7 @@ public class Menu extends Control {
 	/**
 	 * @return the hidden
 	 */
+	@IncludeJsOption
 	public boolean isHidden() {
 		return hidden;
 	}
@@ -229,6 +231,7 @@ public class Menu extends Control {
 	/**
 	 * @return the width
 	 */
+	@IncludeJsOption
 	public int getWidth() {
 		return width;
 	}

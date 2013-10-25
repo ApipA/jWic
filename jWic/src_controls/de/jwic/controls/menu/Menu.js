@@ -1,8 +1,6 @@
 {
 	afterUpdate: function(element) {
-		JWic.controls.Menu.initialize("${control.controlID}", {
-			hidden : $control.hidden
-		})
+		JWic.controls.Menu.initialize("${control.controlID}", $control.buildJsonOptions())
 	},
 	destroy : function(element) {
 		JWic.controls.Menu.destroy("$control.controlID");

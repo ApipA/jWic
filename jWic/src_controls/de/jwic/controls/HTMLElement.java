@@ -50,6 +50,7 @@ public abstract class HTMLElement extends Control implements IHTMLElement {
 	/* (non-Javadoc)
 	 * @see de.jwic.controls.IHTMLElement#getCssClass()
 	 */
+	@IncludeJsOption
 	public String getCssClass() {
 		return cssClass;
 	}

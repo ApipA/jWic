@@ -276,6 +276,7 @@ public abstract class Control implements Serializable, IControl {
 	/* (non-Javadoc)
 	 * @see de.jwic.base.IControl#isVisible()
 	 */
+	@IncludeJsOption
 	public boolean isVisible() {
 		return bolVisible;
 	}

@@ -122,7 +122,22 @@ public class DatePicker extends InputBox {
 	public Locale getLocale() {
 		return locale;
 	}
-
+	/**
+	 * 
+	 * @return the country (or region) of the current locale (used in front-end as a JSON option)
+	 */
+	@IncludeJsOption
+	public String getRegion(){
+		return locale != null ? locale.getCountry() : "";
+	}
+	/**
+	 * 
+	 * @return the language of the current locale (used in front-end as a JSON Option)
+	 */
+	@IncludeJsOption
+	public String getLanguage(){
+		return locale != null ? locale.getLanguage() : "";
+	}
 	/**
 	 * Calculates timezone specific date.
 	 * @param time
@@ -311,6 +326,7 @@ public class DatePicker extends InputBox {
 	 *         DatePickerControl.NO_FORMAT
 	 * 
 	 */
+	@IncludeJsOption
 	public String getDateFormat() {
 		return dateFormat;
 	}
@@ -356,6 +372,7 @@ public class DatePicker extends InputBox {
 	 * 
 	 * @return
 	 */
+	@IncludeJsOption
 	public boolean isIconTriggered() {
 		return iconTriggered;
 	}
@@ -488,6 +505,6 @@ public class DatePicker extends InputBox {
 	@IncludeJsOption
 	public boolean isOpen() {
 		return open;
-	}
+	}	
 
 }

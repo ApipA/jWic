@@ -16,6 +16,15 @@ import de.jwic.base.JavaScriptSupport;
 import de.jwic.json.JsonResourceControl;
 
 /**
+ * 
+ * A Lazy Inflated Tooltip Control. 
+ * This control allows tooltip messages to be sent to the client in a lazy and asyn way.
+ * 
+ * This means that the initial request that contains the content of the tooltip-able control remains small, <br>
+ * but the tooltip can be as large as needed since the content of the tooltip is passes later on
+ * 
+ * Use this control where large content tooltips are needed or where a large number of tooltips is needed.
+ * 
  * @author bogdan
  *
  */
@@ -65,6 +74,9 @@ public class LazyTooltipControl extends JsonResourceControl{
 	}
 	
 
+	/* (non-Javadoc)
+	 * @see de.jwic.json.JsonResourceControl#handleJSONResponse(javax.servlet.http.HttpServletRequest, org.json.JSONWriter)
+	 */
 	@Override
 	public void handleJSONResponse(HttpServletRequest req, JSONWriter jsonOut) throws JSONException {
 		String id = req.getParameter("tooltipProviderId");

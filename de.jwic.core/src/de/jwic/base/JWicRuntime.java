@@ -184,9 +184,9 @@ public class JWicRuntime {
 			}
 			container.access();
 			SessionContext sc = container.getSessionContext();
-			if (request.getMethod().equals("GET")) { // only fire reused event on "GET" requests.
+			if (request != null && request.getMethod().equals("GET")) { // only fire reused event on "GET" requests.
 				log.debug("SessionReused : " + sessionID);
-				sc.fireEvent(new SessionEvent(request == null ? null : Compatibility.getParameterMap(request)), SessionContext.SESSION_REUSED);
+				sc.fireEvent(new SessionEvent(Compatibility.getParameterMap(request)), SessionContext.SESSION_REUSED);
 			}
 			return sc;
 			

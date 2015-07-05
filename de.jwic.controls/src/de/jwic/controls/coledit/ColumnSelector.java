@@ -295,7 +295,7 @@ public class ColumnSelector extends ControlContainer {
 		
 		idColumnMap.put(column.getId(), column);
 		
-		if (!checkBoxes.containsKey("chk" + column.getId())) {
+		if (!checkBoxes.containsKey(column.getId())) {
 			CheckBox chkbox = new CheckBox(this, "chk" + column.getId());
 			chkbox.setChecked(column.isVisible());
 			//chkbox.setLabel(column.getTitle());

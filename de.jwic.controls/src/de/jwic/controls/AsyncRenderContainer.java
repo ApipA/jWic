@@ -202,7 +202,7 @@ public class AsyncRenderContainer extends ControlContainer implements IResourceC
 				.key("html")
 				.value(out.toString());
 				
-				if (context.getScripts() != null) {
+//				if (context.getScripts() != null) {
 					if (context.getScripts() != null && context.getScripts().size() > 0) {
 						jsonOut.key("scripts")
 							.array();
@@ -216,7 +216,7 @@ public class AsyncRenderContainer extends ControlContainer implements IResourceC
 						}
 						jsonOut.endArray();	
 					}
-				}
+//				}
 			
 			jsonOut.key("success").value(true);
 			jsonOut.key("fail").value(false);

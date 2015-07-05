@@ -178,12 +178,14 @@ public class WebEngine  {
 	 */
 	public synchronized void removeWebEngineListener(IWebEngineListener listener) {
 		ArrayList<IWebEngineListener> lTmp = new ArrayList<IWebEngineListener>();
+		int retained = 0;
 		for(IWebEngineListener l : listeners) {
 			if (l != listener) {
 				lTmp.add(l);
+				retained++;
 			}
 		}
-		listeners = (IWebEngineListener[]) lTmp.toArray();
+		listeners = lTmp.toArray(new IWebEngineListener[retained]);
 	}
 	
 	/**
